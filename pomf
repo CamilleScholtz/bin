@@ -47,5 +47,7 @@ url="$(curl --silent -F file="@$file" "http://uguu.se/api.php?d=upload")"
 echo "$url" | xclip -selection primary
 echo "$url" | xclip -selection clipboard
 
+echo "$url" >> "$HOME/usr/images/pomf.txt"
+
 echo "$url"
 notify "Pomfed $word [$url]" & disown

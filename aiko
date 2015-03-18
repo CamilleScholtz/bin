@@ -27,21 +27,21 @@ if [[ "$#" -ge 1 ]]; then
 				count="$(echo "$path" | wc -w)"
 
 				if [[ "$count" -ge 2 ]]; then
-					echo -e "There are $count results that include $brown$term$foreground:\n"
+					echo -e "There are $count packages that include $brown$term$foreground:\n"
 					echo -e "$(echo "$path" | nl | sed "s/^ */  /g" | GREP_COLOR="1;33" grep --color=always "$term")\n"
 					read -p "Which package do you want to install? [1-$count] " answer
-					case "$answer" in
+ 					case "$answer" in
 						[1-$count])
 							path="$(echo "$path" | cut -d $'\n' -f $answer)"
 							echo ""
 							;;
 						*)
-							echo ""
+							echo "TODO"
 							continue
 							;;
 					esac
 				elif [[ "$count" -eq 0 ]]; then
-					echo -e "No results that include $brown$term$foreground could be found."
+					echo -e "No package that includes $brown$term$foreground could be found."
 					echo ""
 					continue
 				fi
@@ -83,7 +83,7 @@ if [[ "$#" -ge 1 ]]; then
 							sudo echo ""
 							;;
 						*)
-							echo ""
+							echo "TODO"
 							continue
 							;;
 					esac

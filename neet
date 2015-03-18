@@ -4,6 +4,8 @@
 # A script to easily play and manage your escapism
 
 # TODO: add read -p if there are fuzzies with the same matches
+# TODO: Move config to etc and add rc
+# TODO: Disable config.bak
 
 foreground="\e[0;39m"
 brown="\e[1;33m"
@@ -13,7 +15,7 @@ info() {
 
 	active="$(echo "$show" | grep "+")"
 
-	name="$(echo "$active" | cut -d "|" -f 2- | cut -c 2- | tr "\r" "\000")"
+	name="$(echo "$active" | cut -d "|" -f 2- | cut -c 2- | tr -d "\r")"
 	if [[ -z "$current" ]]; then
 		current="$(echo "$active" | cut -d "/" -f 1 | cut -d "[" -f 2-)"
 	fi
@@ -25,19 +27,41 @@ info() {
 fuzzy() {
 	directories="$(ls -d "$HOME/downloads/"*/ | cut -d "/" -f 5- | cut -d "/" -f -1)"
 
-	IFS=$'\n'
 
 	mostlikely="$(
+		IFS=$'\n'
 		for directory in $directories; do
+			unset IFS
 			for word in $name; do
-				echo "$directory" | grep -i "$word"
+				echo "$directory" | grep -i "$(echo "$word" | tr -d ",")"
 			done
 		done
 	)"
 
+	count="$(echo "$mostlikely" | wc -l)"
+	if [[ "$count" -ge 2 ]]; then
+		echo -e "There are $count directories that match $brown$name$foreground:\n" 
+		# TODO: Add grep color here like in aiko
+		echo -e "$(echo "$mostlikely" | nl | sed "s/^ */  /g")\n"
+		# TODO: This gets askes every time, save it?
+		read -p "Which directory would you like to use? [1-$count] " answer
+		case "$answer" in
+			[1-$count])
+				mostlikely="$(echo "$mostlikely" | cut -d $'\n' -f $answer)"
+				echo ""
+				;;
+			*)
+				exit
+				;;
+		esac
+	elif [[ "$count" -eq 0 ]]; then
+		echo "No match found."
+		exit
+	fi
+
 	path="$(echo "$mostlikely" | uniq -c | sort | tail -n 1 | cut -d " " -f 8-)"
 
-	# TODO: $currentmpv isn't alway needed, for example in "Padam Padam - 1.avi", but sometimes it IS needed
+	# TODO: $currentmpv isn't alway needed, for example in "Padam Padam - 1.avi", but mostly it IS needed
 	if [[ "$current" -eq 0 ]]; then
 		currentmpv=01
 	elif [[ "$current" -le 9 ]]; then
@@ -51,8 +75,8 @@ fuzzy() {
 	fi
 
 	echo -e "Playing episode $current/$total, $brown$name$foreground."
-	mpc -q pause
-	mpv --fullscreen "$HOME/downloads/$path/"*[E,\ ]$currentmpv*{.avi,.mkv,.mp4}
+#	mpc -q pause
+	mpv --fullscreen "$HOME/downloads/$path/"*{E,Ep,\ }$currentmpv*{.avi,.mkv,.mp4}
 }
 
 if [[ "$#" -ge 1 ]]; then
@@ -69,14 +93,16 @@ if [[ "$#" -ge 1 ]]; then
 			$EDITOR "$HOME/bin/config/neet"
 			;;
 		-s)
-			# TODO: Finish this
 			info
 
-			sort1="$(echo "$show" | sed -n "/| drama/,/| documentary/{ p; /| documentary/q; }" | grep -v "^#" | grep -v "^+" | sort -V -r)"
-			sort2="$(echo "$show" | grep -A32 "| variety show" | grep -v "^#" | grep -v "^+" | sort -V -r)"
+			count="$(grep -c "#" "$HOME/bin/config/neet")"
+
+			for number in $(eval echo "{1..$count}"); do
+				# TODO: Finish this
+				echo -e "Sorted $brown$(grep -m $number "#" "$HOME/bin/config/neet" | tail -n 1 | cut -d " " -f 11- | tr -d "\r" | tr -d "\n")$foreground list."
+			done
 
 			echo -e "$active\n\n$sort1\n$sort2" > ~/test
-			echo "Sorted list."
 			;;
 		+)
 			info
