@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# onodera - onodera at openmailbox dot org
+# A script that toggles mpd pause/play and displays a notification
+
+toggle="$(mpc toggle | grep -o "ERROR")"
+
+if [[ -n "$toggle" ]]; then
+	notify "Audio device currently in use" & disown
+	exit
+fi
+
+current="$(mpc current)"
+
+status="$(mpc | grep -o "playing\|paused")"
+
+if [[ "$status" == playing ]]; then
+	notify "Song resumed: $current" & disown
+else
+	notify "Song paused: $current" & disown
+fi

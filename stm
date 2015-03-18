@@ -1,0 +1,137 @@
+#!/usrbin/python
+
+import os
+import glob
+import argparse
+import subprocess
+
+
+class cached(object):
+
+    def __init__(self, function):
+        self.function = function
+        self.cache = {}
+
+    def __call__(self, *args):
+        try:
+            return self.cache[args]
+        except KeyError:
+            return self.memorize(*args)
+
+    def store(self, key, value):
+        self.cache[key] = value
+        return value
+
+    def memorize(self, *args):
+        return self.store(args, self.function(*args))
+
+
+class NoSuchGameInstalled(Exception):
+    pass
+
+
+def get_appmanifests(steamapps):
+
+    for appmanifest in glob.glob(os.path.join(steamapps, '*.acf')):
+        with open(appmanifest) as f:
+            yield f.readlines()
+
+
+def extract_appid_and_name(appmanifest):
+    for line in appmanifest:
+        splited = line.split()
+        try:
+            if splited[0] == '"appid"':
+                appid = " ".join(splited[1:])[1:-1]
+
+            if splited[0] == '"name"':
+                name = " ".join(splited[1:])[1:-1]
+        except IndexError:
+            pass
+
+    return name, appid
+
+
+@cached
+def generate_appid_name_dict(steamapps):
+
+    dictionary = {}
+
+    for appmanifest in get_appmanifests(steamapps):
+        name, appid = extract_appid_and_name(appmanifest)
+        dictionary[name] = appid
+
+    return dictionary
+
+
+def list_games(steamapps):
+    return "\n".join(generate_appid_name_dict(steamapps).keys())
+
+
+def launch_game(name_or_appid, steamapps):
+
+    command = "/usrbin/steam -applaunch {0}"
+
+    appid = get_appid(name_or_appid, steamapps)
+    if appid in generate_appid_name_dict(steamapps).values():
+        subprocess.call(command.format(appid), shell=True)
+        return "Launching game."
+    else:
+        raise NoSuchGameInstalled()
+
+
+def get_appid(name_or_appid, steamapps):
+    is_appid = all((x.isdigit() for x in name_or_appid))
+    if is_appid:
+        return name_or_appid
+    else:
+        dictionary = generate_appid_name_dict(steamapps)
+        try:
+            return dictionary[name_or_appid]
+        except:
+            raise NoSuchGameInstalled()
+
+
+def argument_parsing():
+
+    steamapps = os.path.expanduser("~/.local/share/Steam/steamapps")
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--steamapps", action="store", default=steamapps,
+                        help="location of steamapps folder")
+
+    subparsers = parser.add_subparsers(dest='subcommand')
+    subparsers.required = True
+
+    parser_list = subparsers.add_parser('list',
+                                        help="list installed steam games")
+    parser_list.set_defaults(which='list')
+
+    parser_launch = subparsers.add_parser('launch',
+                                          help="launch game using steam")
+    parser_launch.set_defaults(which='launch')
+    parser_launch.add_argument('name_or_appid', help="game's appid or name")
+
+    parser_appid = subparsers.add_parser('appid', help="get appid of a game")
+    parser_appid.set_defaults(which='appid')
+    parser_appid.add_argument('name_or_appid', help="game's appid or name")
+
+    return parser.parse_args()
+
+
+def main():
+
+    steamapps = os.path.expanduser("~/.local/share/Steam/steamapps")
+    args = argument_parsing()
+
+    if args.which == 'list':
+        print(list_games(steamapps))
+
+    if args.which == 'appid':
+        print(get_appid(args.name_or_appid, steamapps))
+
+    if args.which == 'launch':
+        print(launch_game(args.name_or_appid, steamapps))
+
+main()

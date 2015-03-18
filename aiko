@@ -1,0 +1,154 @@
+#!/bin/bash
+#
+# onodera - onodera at openmailbox dot org
+# A pkgmk/pkgadd wrapper with dependency management (using prt-get depends pkg)
+
+# TODO: PAckages wihout dependencies say 2/2 and show too many ""s
+# TODO: Reads after 6 don't work
+# TODO: Fix ""s
+# TODO: Give numbers colors
+# TODO: packages with one dep don't display the dep
+
+foreground="\e[0;39m"
+brown="\e[1;33m"
+
+if [[ "$#" -ge 1 ]]; then
+	case "$1" in
+		-h|--help)
+			# TODO: Add change active escapism option
+			echo "+ pkg      install pkg"
+			echo "- pkg      uninstall pkg"
+			echo "           update"
+			;;
+		+)
+			shift
+			for term in $@; do
+				path="$(ports -l | grep "$term")"
+				count="$(echo "$path" | wc -w)"
+
+				if [[ "$count" -ge 2 ]]; then
+					echo -e "There are $count results that include $brown$term$foreground:\n"
+					echo -e "$(echo "$path" | nl | sed "s/^ */  /g" | GREP_COLOR="1;33" grep --color=always "$term")\n"
+					read -p "Which package do you want to install? [1-$count] " answer
+					case "$answer" in
+						[1-$count])
+							path="$(echo "$path" | cut -d $'\n' -f $answer)"
+							echo ""
+							;;
+						*)
+							echo ""
+							continue
+							;;
+					esac
+				elif [[ "$count" -eq 0 ]]; then
+					echo -e "No results that include $brown$term$foreground could be found."
+					echo ""
+					continue
+				fi
+
+				pkg="$(echo "$path" | cut -d "/" -f 2)"
+
+				deps="$(prt-get depends "$pkg" | grep "\[ \]" | grep -v "] $pkg$" | cut -d " " -f 3-)"
+				depspath="$(
+					for dep in $deps; do
+						ports -l | grep "/$dep$"
+					done
+				)"
+
+				# Make doubles choose a default dep or something TODO TODO TODO
+				#doubles="$(echo "$depspath" | cut -d "/" -f 2 | sort | uniq -d)"
+				#doublespath="$(
+				#	if [[ -n "$doubles" ]]; then
+				#		for double in $doubles; do
+				#			echo "$(echo "$depspath" | grep "/$double$")"
+				#		done
+				#	fi
+				#)"
+
+				count="$(echo "$depspath" | wc -l)"
+
+				if [[ "$count" -ge 2 ]]; then
+					echo -e "Installing $brown$path$foreground, the following dependencies will also be installed:\n"
+					echo -e "$(echo "$depspath" | sed "s/^ */        /g")\n"
+					read -p "Do you want to continue? [y/N] " answer
+					case "$answer" in
+						[Yy*])
+							for dep in $deps; do
+								result="$(ports -l | grep "/$dep$")"
+								# TODO: what does this do lol
+								countTODO="$(echo "$result" | wc -l)"
+							done
+
+							current=0
+							sudo echo ""
+							;;
+						*)
+							echo ""
+							continue
+							;;
+					esac
+				else
+					echo -e -n "Installing $brown$path$foreground, do you want to continue? [Y/n] "
+					read -p "" answer
+						case "$answer" in
+						[Nn*])
+							echo ""
+							continue
+							;;
+						*)
+							current=-1
+							sudo echo ""
+							;;
+					esac
+				fi
+
+				for deppath in $depspath; do
+					current="$((current + 1))"
+
+					echo -e "Installing dependency $current/$((count + 1)), $brown$deppath$foreground."
+					sleep 1
+
+					cd "/usr/ports/$deppath"
+					sudo pkgmk -d -i
+
+					if [[ "$?" -eq 0 ]]; then
+						notify "Installed dependency [$deppath]" & disown
+					else
+						echo -e "Failed to install dependency $current/$((count + 1)), $brown$deppath$foreground."
+						notify "Failed to install dependency [$deppath]" & disown
+						exit
+					fi
+				done
+
+				echo -e "Installing package $((count + 1))/$((count + 1)), $brown$path$foreground."
+
+				cd "/usr/ports/$path"
+
+				if [[ -z "$(pkginfo -i | grep "^$pkg ")" ]]; then
+					sudo pkgmk -d -i
+				else
+					sudo pkgmk -d -u
+				fi
+
+				if [[ "$?" -eq 0 ]]; then
+					notify "Installed package [$path]" & disown
+				else
+					echo -e "Failed to install package $((count + 1))/$((count + 1)), $brown$path$foreground."
+					notify "Failed to install package [$path]" & disown
+					exit
+				fi
+
+			done
+			shift
+			;;
+		*)
+			echo "Invalid option, use -h for help."
+			;;
+	esac
+else
+	echo "Updating ports tree."
+	sudo echo ""
+	sudo ports -u
+	echo ""
+	prt-get diff
+fi

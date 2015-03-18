@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+# onodera - onodera at openmailbox dot org
+# A script that takes a scrot and display a notification
+
+if [[ "$#" -eq 1 ]]; then
+	case "$1" in
+		-h|--help)
+			echo "-s         take selection scrot"
+			echo "           take fullscreen scrot"
+			;;
+		-s)
+			maim --hidecursor -s -b 3 -c 250,250,250 "$HOME/scrot-$(date +"%l%M%S" | sed "s/ //g").png"
+			notify "Scrotted selection" & disown
+			;;
+		*)
+			echo "Invalid option, use -h for help."
+			;;
+	esac
+else
+	maim --hidecursor "$HOME/scrot-$(date +"%l%M%S" | sed "s/ //g").png"
+	notify "Scrotted screen" & disown
+fi

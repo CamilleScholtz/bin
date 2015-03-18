@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# onodera - onodera at openmailbox dot org
+# Displays installed packages
+
+packages="$(pkginfo -i | wc -l)"
+
+echo "You have $packages packages installed."

@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# onodera - onodera at openmailbox dot org
+# Upload files/scrots to uguu.se
+
+# TODO: Add error when (file) fails
+# TODO: Make wget extensions work
+
+if [[ "$#" -eq 1 ]]; then
+	case "$1" in
+		-h|--help)
+			echo "-s         upload selection scrot"
+			echo "file       upload file"
+			echo "           upload fullscreen scrot"
+			;;
+		-s)
+			file="/tmp/scrot.png"
+			maim --hidecursor -s -b 3 -c 250,250,250 "$file" 2> "/dev/null"
+
+			if [[ "$?" -ge 1 ]]; then
+				echo "Selection cancelled."
+				exit
+			fi
+
+			word=selection
+			;;
+		*)
+			if [[ "$@" =~ ^http ]]; then
+				wget --quiet "$@" -O "/tmp/file"
+				file="/tmp/file"
+			else
+				file="$@"
+			fi
+
+			word=file
+			;;
+	esac
+else
+	file="/tmp/scrot.png"
+	maim --hidecursor "$file"
+
+	word=screen
+fi
+
+url="$(curl --silent -F file="@$file" "http://uguu.se/api.php?d=upload")"
+
+echo "$url" | xclip -selection primary
+echo "$url" | xclip -selection clipboard
+
+echo "$url"
+notify "Pomfed $word [$url]" & disown
