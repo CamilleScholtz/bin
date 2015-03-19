@@ -86,9 +86,11 @@ fuzzy() {
 	fi
 
 	echo -e "Playing episode $current/$total, $brown$name$foreground."
-	mpc -q pause
-	mpv --fullscreen "$HOME/downloads/$path/"*{E,Ep,\ }{$currentmpv,$current}*{.avi,.mkv,.mp4}
+#	mpc -q pause
+#	mpv --fullscreen "$HOME/downloads/$path/"*{E,e,Ep,ep,\ }{$currentmpv,$current}*{.avi,.mkv,.mp4}
 }
+
+shopt -s extglob
 
 if [[ "$#" -ge 1 ]]; then
 	case "$1" in
@@ -96,8 +98,8 @@ if [[ "$#" -ge 1 ]]; then
 			# TODO: Add change active escapism option
 			echo "-e         edit list"
 			echo "-s         sort list"
-			echo "+          increment ep"
-			echo "-          decrement ep"
+			echo "+(++...)   increment ep"
+			echo "-(--...)   decrement ep"
 			echo "           play"
 			;;
 		-e)
@@ -115,21 +117,19 @@ if [[ "$#" -ge 1 ]]; then
 
 			echo -e "$active\n\n$sort1\n$sort2" > ~/test
 			;;
-		+)
+		+(+))
 			info
+			amount="$(echo "$1" | wc -m)"
+			increment="$((current - 1 + amount))"
 
 			shift
-			if [[ "$current" -lt "$total" ]]; then
-				increment="$((current + 1))"
-
+			if [[ "$increment" -le "$total" ]]; then
 				sed -i "s/+ \[$current\/$total\]/+ \[$increment\/$total\]/" "$HOME/etc/neet/list"
 				current="$increment"
 
-				# bash "$HOME/.bar/neet/neet_button.sh" & disown
-
 				fuzzy
 			else
-				genre="$(echo "$show" | grep -B 32 "+" | grep "#" | tail -n 1 | cut -c 3- | head -c -2)"
+				genre="$(echo "$show" | grep -B 32 "+" | grep "#" | tail -n 1 | cut -d "|" -f 2- | cut -c 2- | head -c -2)"
 
 				echo -n -e "$brown$name$foreground completed! Would you like to remove this $genre? [y/N] "
 				read -p "" answer
@@ -144,17 +144,15 @@ if [[ "$#" -ge 1 ]]; then
 			fi
 			shift
 			;;
-		-)
+		+(-))
 			info
+			amount="$(echo "$1" | wc -m)"
+			decrement="$((current + 1 - amount))"
 
 			shift
-			if [[ "$current" -ge 1 ]]; then
-				decrement="$((current - 1))"
-
+			if [[ "$decrement" -ge 1 ]]; then
 				sed -i "s/+ \[$current\/$total\]/+ \[$decrement\/$total\]/" "$HOME/etc/neet/list"
 				current="$decrement"
-
-				# bash "$HOME/.bar/neet/neet_button.sh" & disown
 
 				fuzzy
 			else
