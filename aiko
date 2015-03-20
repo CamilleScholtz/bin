@@ -36,10 +36,25 @@ search() {
 					echo ""
 					;;
 				*)
-					echo "TODO"
+					echo "$answer is not a valid answer."
 					continue
 					;;
 			esac
+		pkg="$(echo "$path" | cut -d "/" -f 2)"	
+		elif [[ "$type" == uninstall ]]; then
+			echo -e "$(echo "$path" | nl | sed "s/^ */  /g" | GREP_COLOR="1;33" grep --color=always "$term")\n"
+			read -p "Which package do you want to uninstall? [1-$count] " answer
+			case "$answer" in
+				[1-$count])
+					path="$(echo "$path" | cut -d $'\n' -f $answer)"
+					echo ""
+					;;
+				*)
+					echo "$answer is not a valid answer."
+					continue
+					;;
+			esac
+		pkg="$(echo "$path" | cut -d "/" -f 2)"		
 		fi
 	elif [[ "$count" -eq 0 ]]; then
 		echo -e "No package that includes $brown$term$foreground could be found."
@@ -60,7 +75,7 @@ if [[ "$#" -ge 1 ]]; then
 			type=search
 
 			shift
-			for term in $@; do
+			for term in "$@"; do
 				search
 			done
 			shift
@@ -69,10 +84,8 @@ if [[ "$#" -ge 1 ]]; then
 			type=install
 
 			shift
-			for term in $@; do
+			for term in "$@"; do
 				search
-
-				pkg="$(echo "$path" | cut -d "/" -f 2)"
 
 				deps="$(prt-get depends "$pkg" | grep "\[ \]" | grep -v "] $pkg$" | cut -d " " -f 3-)"
 				depspath="$(
@@ -163,7 +176,15 @@ if [[ "$#" -ge 1 ]]; then
 					notify "Failed to install package [$path]" & disown
 					exit
 				fi
+			done
+			shift
+			;;
+		-)
+			type=uninstall
 
+			shift
+			for term in "$@"; do
+				echo TODO
 			done
 			shift
 			;;
@@ -175,6 +196,12 @@ else
 	echo "Updating ports tree."
 	password
 	sudo ports -u
-	echo ""
-	prt-get diff
+
+	#git="$(pkginfo -i | grep " git" | cut -d " " -f -1)"
+
+	#echo ""
+	#prt-get diff
+	#echo ""
+	#echo -e "Git packages with updates:\n"
+	#echo "$git"
 fi
