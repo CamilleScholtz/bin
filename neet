@@ -21,7 +21,7 @@ info() {
 }
 
 fuzzy() {
-	directories="$(ls -d "$HOME/downloads/"*/ | cut -d "/" -f 5- | cut -d "/" -f -1)"
+	directories="$(ls -d "$HOME/tmp/downloads/"*/ | cut -d "/" -f 5- | cut -d "/" -f -1)"
 
 
 	mostlikely="$(
@@ -86,8 +86,8 @@ fuzzy() {
 	fi
 
 	echo -e "Playing episode $current/$total, $brown$name$foreground."
-#	mpc -q pause
-#	mpv --fullscreen "$HOME/downloads/$path/"*{E,e,Ep,ep,\ }{$currentmpv,$current}*{.avi,.mkv,.mp4}
+	mpc -q pause
+	mpv --fullscreen "$HOME/tmp/downloads/$path/"*{E,e,Ep,ep,\ }{$currentmpv,$current}*{.avi,.mkv,.mp4}
 }
 
 shopt -s extglob
