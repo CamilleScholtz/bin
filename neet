@@ -4,6 +4,7 @@
 # A script to easily play and manage your animu/kdrama/etc.
 
 # TODO: Disable config.bak
+# TODO: Remove "tr -d "\r""s?
 
 foreground="\e[0;39m"
 brown="\e[1;33m"
@@ -21,8 +22,7 @@ info() {
 }
 
 fuzzy() {
-	directories="$(ls -d "$HOME/tmp/downloads/"*/ | cut -d "/" -f 5- | cut -d "/" -f -1)"
-
+	directories="$(ls -d "$HOME/tmp/downloads/"*/ | cut -d "/" -f 5- | cut -d "/" -f 2-)"
 
 	mostlikely="$(
 		IFS=$'\n'
@@ -95,7 +95,6 @@ shopt -s extglob
 if [[ "$#" -ge 1 ]]; then
 	case "$1" in
 		-h|--help)
-			# TODO: Add change active escapism option
 			echo "-a         add escapism"
 			echo "-c escp    set current escapism"
 			echo "-e         edit list"
@@ -107,18 +106,17 @@ if [[ "$#" -ge 1 ]]; then
 		-a)
 			info
 
-			read -p "Full name: " inputname
+			read -p "Escapism name: " inputname
 			while read -p "Episode count: " inputtotal; do
 				if [[ -n "$(echo "$inputtotal" | grep -o "[A-Za-z]")" ]]; then
-					echo "Episode count can only contain numbers, try again."
+					echo -e "${brown}Episode count can only contain numbers, try again.$foreground"
 				else
 					break
 				fi
 			done
 			while read -p "Catagory/genre: " inputcatagory; do
-				# TODO: figure out why $inputcatagory$ doesn't work and add it
-				if [[ -z "$(echo "$list" | grep "#" | grep "| $inputcatagory")" ]]; then
-					echo -e "Catagory $brown$inputcatagory$foreground not in list, try again."
+				if [[ -z "$(echo "$list" | grep "#" | grep "| $inputcatagory$")" ]]; then
+					echo -e "${brown}Catagory $inputcatagory not in list, try again.$foreground"
 				else
 					break
 				fi
@@ -135,7 +133,7 @@ if [[ "$#" -ge 1 ]]; then
 					count="$((5 - width))"
 					space="$(printf " %.0s" $(eval echo "{1..$count}"))"
 
-					sed -i "/#         \| $inputcatagory/a - \[1\/$inputtotal\]$space\| $inputname" "$HOME/list"
+					sed -i "/#         \| $inputcatagory/a - \[1\/$inputtotal\]$space\| $inputname" "$HOME/etc/neet/list"
 					echo ""
 					echo "Added $inputcatagory to list."
 
