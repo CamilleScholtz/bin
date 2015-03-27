@@ -29,11 +29,14 @@ if [[ "$#" -ge 1 ]]; then
 					IFS=$'\n'
 					for line in $path; do
 						number="$((number + 1))"
-						album="$(echo "$line" | cut -d "/" -f 6 | cut -d " " -f 3-)"
+						album="$(echo "$line" | cut -d "/" -f 7 | cut -d " " -f 3-)"
 						output="$(echo "$line" | cut -d "." -f -1)"
 
 						echo -e "Resizing cover $number/$all, $brown$album$foreground."
 						convert "$line" -resize $size! "${output}_popup.png" 2> "/dev/null"
+						if [[ "$?" -ge 1 ]]; then
+							exit
+						fi
 					done
 					;;
 				*)

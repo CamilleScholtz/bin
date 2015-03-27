@@ -7,7 +7,7 @@
 # TODO: Reads after 6 don't work
 # TODO: Fix ""s
 # TODO: Give numbers colors
-# TODO: packages with one dep don't display the dep
+# TODO: packages with one dep don't display the dep (fixed?)
 
 foreground="\e[0;39m"
 brown="\e[1;33m"
@@ -21,46 +21,34 @@ password() {
 
 search() {
 	path="$(ports -l | grep "$term")"
+#	installed="$(pkginfo -i | grep "^$(echo "$path" | cut -d "/" -f 2) ")"
 	count="$(echo "$path" | wc -w)"
 
 	if [[ "$count" -ge 2 ]]; then
 		echo -e "There are $count packages that include $brown$term$foreground:\n"
 		if [[ "$type" == search ]]; then
 			echo -e "$(echo "$path" | sed "s/^ */        /g" | GREP_COLOR="1;33" grep --color=always "$term")\n"
-		elif [[ "$type" == install ]]; then
+		elif [[ "$type" == install || "$type" == uninstall ]]; then
 			echo -e "$(echo "$path" | nl | sed "s/^ */  /g" | GREP_COLOR="1;33" grep --color=always "$term")\n"
-			read -p "Which package do you want to install? [1-$count] " answer
+			read -p "Which package do you want to $type? [1-$count] " answer
 			case "$answer" in
 				[1-$count])
 					path="$(echo "$path" | cut -d $'\n' -f $answer)"
 					echo ""
 					;;
 				*)
-					echo "$answer is not a valid answer."
+					echo -e "$brown$answer$foreground is not a valid answer."
 					continue
 					;;
 			esac
-		pkg="$(echo "$path" | cut -d "/" -f 2)"	
-		elif [[ "$type" == uninstall ]]; then
-			echo -e "$(echo "$path" | nl | sed "s/^ */  /g" | GREP_COLOR="1;33" grep --color=always "$term")\n"
-			read -p "Which package do you want to uninstall? [1-$count] " answer
-			case "$answer" in
-				[1-$count])
-					path="$(echo "$path" | cut -d $'\n' -f $answer)"
-					echo ""
-					;;
-				*)
-					echo "$answer is not a valid answer."
-					continue
-					;;
-			esac
-		pkg="$(echo "$path" | cut -d "/" -f 2)"		
 		fi
 	elif [[ "$count" -eq 0 ]]; then
 		echo -e "No package that includes $brown$term$foreground could be found."
 		echo ""
 		continue
 	fi
+
+	pkg="$(echo "$path" | cut -d "/" -f 2)"
 }
 
 if [[ "$#" -ge 1 ]]; then
@@ -184,7 +172,9 @@ if [[ "$#" -ge 1 ]]; then
 
 			shift
 			for term in "$@"; do
-				echo TODO
+				search
+
+
 			done
 			shift
 			;;
@@ -199,8 +189,8 @@ else
 
 	#git="$(pkginfo -i | grep " git" | cut -d " " -f -1)"
 
-	#echo ""
-	#prt-get diff
+	echo ""
+	prt-get diff
 	#echo ""
 	#echo -e "Git packages with updates:\n"
 	#echo "$git"
