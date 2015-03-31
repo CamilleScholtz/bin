@@ -9,6 +9,7 @@
 
 foreground="\e[0;39m"
 brown="\e[1;33m"
+red="\e[1;31m"
 
 info() {
 	list="$(cat "$HOME/etc/neet/list")"
@@ -25,17 +26,37 @@ info() {
 fuzzy() {
 	directories="$(ls -d "$HOME/tmp/downloads/"*/ | cut -d "/" -f 5- | cut -d "/" -f 2-)"
 
-	mostlikely="$(
+	if [[ "$debug" == true ]]; then
 		IFS=$'\n'
 		for directory in $directories; do
-			# TODO: should IFS be unset here? seem logical but works better with set IFS...
-			# unset IFS
 			for word in $name; do
-				echo "$directory" | grep -i "$(echo "$word" | tr -d ",")"
+				# TODO: should IFS be unset here? seem logical but works better with set IFS...
+				# unset IFS
+				mostlikelydebug="$(echo "$directory" | grep -i "$(echo "$word" | tr -d ",")")"
+				if [[ "$?" -eq 1 ]]; then
+					echo -e "    $directory = ${brown}no$foreground"
+				else
+					echo -e "    $directory = ${red}yes$foreground"
+				fi
+				if [[ -n"$mostlikelydebug" ]]; then
+					mostlikely=$mostlikely$mostlikelydebug
+				fi
 			done
 		done
 		unset IFS
-	)"
+	else
+		mostlikely="$(
+			IFS=$'\n'
+			for directory in $directories; do
+				# TODO: should IFS be unset here? seem logical but works better with set IFS...
+				# unset IFS
+				for word in $name; do
+					echo "$directory" | grep -i "$(echo "$word" | tr -d ",")"
+				done
+			done
+			unset IFS
+		)"
+	fi
 
 	count="$(echo "$mostlikely" | uniq | wc -l)"
 	if [[ "$count" -ge 2 ]]; then
@@ -87,7 +108,9 @@ fuzzy() {
 	else
 		currentmpv="$current"
 	fi
+}
 
+play() {
 	echo -e "Playing episode $current/$total, $brown$name$foreground."
 	mpc -q pause
 	mpv --fullscreen "$HOME/tmp/downloads/$path/"*{E,e,Ep,ep,\ }{$currentmpv,$current}*{.avi,.mkv,.mp4}
@@ -100,6 +123,7 @@ if [[ "$#" -ge 1 ]]; then
 		-h|--help)
 			echo "-a         add escapism"
 			echo "-c escp    set current escapism"
+			echo "-d         debug info"
 			echo "-e         edit list"
 			echo "-s         sort list"
 			echo "+(++...)   increment ep"
@@ -148,6 +172,27 @@ if [[ "$#" -ge 1 ]]; then
 		-c)
 			# TODO: Finish this
 			;;
+		-d)			
+			debug=true
+
+			echo "info() { "
+			info
+			echo -e "    active     = $brown$active$foreground"
+			echo -e "    name       = $brown$name$foreground"
+			echo -e "    current    = $brown$current$foreground"
+			echo -e "    total      = $brown$total$foreground"
+			echo "}"
+			echo ""
+	
+			echo "fuzzy() {"
+			fuzzy
+			echo ""
+			echo -e "    mostlikely = $brown$mostlikely$foreground"
+			echo -e "    count      = $brown$count$foreground"
+			echo -e "    path       = $brown$path$foreground"
+			echo -e "    currentmpv = $brown$currentmpv$foreground"
+			echo "}"
+			;;
 		-e)
 			$EDITOR "$HOME/etc/neet/list"
 			;;
@@ -174,6 +219,7 @@ if [[ "$#" -ge 1 ]]; then
 				current="$increment"
 
 				fuzzy
+				play
 			else
 				category="$(echo "$list" | grep -B 32 "+" | grep "#" | tail -n 1 | cut -d "|" -f 2- | cut -c 2- | head -c -1)"
 
@@ -201,6 +247,7 @@ if [[ "$#" -ge 1 ]]; then
 				current="$decrement"
 
 				fuzzy
+				play
 			else
 				echo "Can't go lower than 1!"
 			fi
@@ -213,4 +260,5 @@ if [[ "$#" -ge 1 ]]; then
 else
 	info
 	fuzzy
+	play
 fi

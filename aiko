@@ -132,7 +132,7 @@ if [[ "$#" -ge 1 ]]; then
 				for deppath in $depspath; do
 					current="$((current + 1))"
 
-					echo -e "Installing dependency $current/$((count + 1)), $brown$deppath$foreground."
+					echo -e "Installing dependency $current/$count, $brown$deppath$foreground."
 					sleep 1
 
 					cd "/usr/ports/$deppath"
