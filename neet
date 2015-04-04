@@ -23,7 +23,7 @@ info() {
 	total="$(echo "$active" | cut -d "]" -f 1 | cut -d "/" -f 2-)"
 }
 
-fuzzy() {
+directory() {
 	directories="$(ls -d "$HOME/tmp/downloads/"*/ | cut -d "/" -f 5- | cut -d "/" -f 2-)"
 
 	if [[ "$debug" == true ]]; then
@@ -91,30 +91,32 @@ fuzzy() {
 			esac
 		fi
 	elif [[ "$count" -eq 0 ]] && [[ -z "$debug" ]]; then
-			echo $count
-		echo "No match found, run neet -d for debug info."
+		echo -e "No $brown$directory$foreground match found, run neet -d for debug info."
 		exit
 	fi
 
 	path="$(echo "$mostlikely" | uniq -c | sort | tail -n 1 | cut -d " " -f 8-)"
+}
 
-	if [[ "$current" -eq 0 ]]; then
-		currentmpv=01
-	elif [[ "$current" -le 9 ]]; then
-		for number in {1..9}; do
-			if [[ "$number" -eq "$((10#$current))" ]]; then
-				currentmpv=0$number
-			fi
-		done
-	else
-		currentmpv="$current"
+episode() {
+	episodes="$(ls "$HOME/tmp/downloads/$path" | grep -v ".ass$" | grep -v ".srt$" | cut -d "." -f -1)"
+
+	# TODO: Add symbols like - & / to [] <- is this needed?
+	format="$(echo "$episodes" | grep "[a-zA-Z ]$current[a-zA-Z ]*$")"
+	count="$(echo "$format" | wc -l)"
+
+	if [[ "$count" -ge 2 ]]; then
+		echo "TODO"
+	elif [[ "$count" -eq 0 ]] && [[ -z "$debug" ]]; then
+		echo -e "No $brown$episode$foreground match found, run neet -d for debug info."
+		exit
 	fi
 }
 
 play() {
 	echo -e "Playing episode $current/$total, $brown$name$foreground."
 	mpc -q pause
-	mpv --fullscreen "$HOME/tmp/downloads/$path/"*{$currentmpv,$current}*{.avi,.mkv,.mp4}
+	mpv --fullscreen "$HOME/tmp/downloads/$path$format"{.avi,.mkv,.mp4}
 }
 
 shopt -s extglob
@@ -185,13 +187,32 @@ if [[ "$#" -ge 1 ]]; then
 			echo "}"
 			echo ""
 	
-			echo "fuzzy() {"
-			fuzzy
+			echo "directory() {"
+			directory
 			echo ""
 			echo -e "    mostlikely = $brown$mostlikely$foreground"
 			echo -e "    count      = $brown$count$foreground"
 			echo -e "    path       = $brown\$HOME/tmp/downloads/$path$foreground"
-			echo -e "    currentmpv = $brown$currentmpv$foreground"
+			echo "}"
+			echo ""
+
+			echo "episode() {"
+			episode
+			# TODO: Add red number to $format
+			echo "$(echo "$episodes" | sed "s/^/    /g" | GREP_COLOR="1;33" grep --color=always "[0-9]")"
+			echo ""
+			echo -e "    format     = $brown$format$foreground"
+			echo "}"
+			echo ""
+
+			echo "play() {"
+			echo "    mpv \"\$HOME/tmp/downloads/$path$format\"{.avi,.mkv,.mp4}"
+			test "$HOME/tmp/downloads/$path$format{.avi,.mkv,.mp4}"
+			if [[ "$?" -eq 0 ]]; then
+				echo -e "    ${brown}File exists!$foreground"
+			else
+				echo -e "    ${brown}File does NOT exist!$foreground"
+			fi
 			echo "}"
 			;;
 		-e)
@@ -219,7 +240,8 @@ if [[ "$#" -ge 1 ]]; then
 				sed -i "s/+ \[$current\/$total\]/+ \[$increment\/$total\]/" "$HOME/etc/neet/list"
 				current="$increment"
 
-				fuzzy
+				directory
+				episode
 				play
 			else
 				category="$(echo "$list" | grep -B 32 "+" | grep "#" | tail -n 1 | cut -d "|" -f 2- | cut -c 2- | head -c -1)"
@@ -247,7 +269,8 @@ if [[ "$#" -ge 1 ]]; then
 				sed -i "s/+ \[$current\/$total\]/+ \[$decrement\/$total\]/" "$HOME/etc/neet/list"
 				current="$decrement"
 
-				fuzzy
+				directory
+				episode
 				play
 			else
 				echo "Can't go lower than 1!"
@@ -260,6 +283,7 @@ if [[ "$#" -ge 1 ]]; then
 	esac
 else
 	info
-	fuzzy
+	directory
+	episode
 	play
 fi
