@@ -33,13 +33,12 @@ fuzzy() {
 				# TODO: should IFS be unset here? seem logical but works better with set IFS...
 				# unset IFS
 				mostlikelydebug="$(echo "$directory" | grep -i "$(echo "$word" | tr -d ",")")"
-				if [[ "$?" -eq 1 ]]; then
-					echo -e "    $directory = ${brown}no$foreground"
-				else
+				if [[ "$?" -eq 0 ]]; then
 					echo -e "    $directory = ${red}yes$foreground"
-				fi
-				if [[ -n"$mostlikelydebug" ]]; then
 					mostlikely=$mostlikely$mostlikelydebug
+					count="$((count + 1))"
+				else
+					echo -e "    $directory = ${brown}no$foreground"
 				fi
 			done
 		done
@@ -56,9 +55,10 @@ fuzzy() {
 			done
 			unset IFS
 		)"
+
+		count="$(echo "$mostlikely" | wc -l)"
 	fi
 
-	count="$(echo "$mostlikely" | uniq | wc -l)"
 	if [[ "$count" -ge 2 ]]; then
 		if [[ -n "$(grep "$name" "$HOME/etc/neet/save")" ]]; then
 			mostlikely="$(cut -d "|" -f 2- "$HOME/etc/neet/save" | cut -c 2-)"
@@ -90,8 +90,9 @@ fuzzy() {
 					;;
 			esac
 		fi
-	elif [[ "$count" -eq 0 ]]; then
-		echo "No match found."
+	elif [[ "$count" -eq 0 ]] && [[ -z "$debug" ]]; then
+			echo $count
+		echo "No match found, run neet -d for debug info."
 		exit
 	fi
 
@@ -113,7 +114,7 @@ fuzzy() {
 play() {
 	echo -e "Playing episode $current/$total, $brown$name$foreground."
 	mpc -q pause
-	mpv --fullscreen "$HOME/tmp/downloads/$path/"*{E,e,Ep,ep,\ }{$currentmpv,$current}*{.avi,.mkv,.mp4}
+	mpv --fullscreen "$HOME/tmp/downloads/$path/"*{$currentmpv,$current}*{.avi,.mkv,.mp4}
 }
 
 shopt -s extglob
@@ -189,7 +190,7 @@ if [[ "$#" -ge 1 ]]; then
 			echo ""
 			echo -e "    mostlikely = $brown$mostlikely$foreground"
 			echo -e "    count      = $brown$count$foreground"
-			echo -e "    path       = $brown$path$foreground"
+			echo -e "    path       = $brown\$HOME/tmp/downloads/$path$foreground"
 			echo -e "    currentmpv = $brown$currentmpv$foreground"
 			echo "}"
 			;;
