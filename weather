@@ -10,4 +10,4 @@ info="$(wget -q -O- "http://www.accuweather.com/en/nl/bunnik/250582/weather-fore
 temp="$(echo "$info" | cut -d "'" -f 10- | cut -d "'" -f -1)"
 kind="$(echo "$info" | cut -d "'" -f 14- | cut -d "'" -f -1)"
 
-echo -e "It's $brown$temp$foreground degrees and $brown$kind$foreground."
+echo -e "It's $brown$temp$foreground degrees and the weather type is $brown$kind$foreground."

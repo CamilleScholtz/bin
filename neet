@@ -56,7 +56,7 @@ directory() {
 			unset IFS
 		)"
 
-		count="$(echo "$mostlikely" | wc -l)"
+		count="$(echo "$mostlikely" | grep -v "^$" | wc -l)"
 	fi
 
 	if [[ "$count" -ge 2 ]]; then
@@ -91,7 +91,7 @@ directory() {
 			esac
 		fi
 	elif [[ "$count" -eq 0 ]] && [[ -z "$debug" ]]; then
-		echo -e "No $brown$directory$foreground match found, run neet -d for debug info."
+		echo -e "No ${brown}directory$foreground match found, run neet -d for debug info."
 		exit
 	fi
 
@@ -99,16 +99,16 @@ directory() {
 }
 
 episode() {
-	episodes="$(ls "$HOME/tmp/downloads/$path" | grep -v ".ass$" | grep -v ".srt$" | cut -d "." -f -1)"
+	episodes="$(ls "$HOME/tmp/downloads/$path" | grep ".avi$\|.mkv$\|.mp4$")"
 
-	# TODO: Add symbols like - & / to [] <- is this needed?
-	format="$(echo "$episodes" | grep "[a-zA-Z ]$current[a-zA-Z ]*$")"
-	count="$(echo "$format" | wc -l)"
-
+	# TODO: Add a shitton of formats
+	format="$(echo "$episodes" | grep "E0$current")"
+	count="$(echo "$format" | grep -v "^$" | wc -l)"
+	
 	if [[ "$count" -ge 2 ]]; then
 		echo "TODO"
 	elif [[ "$count" -eq 0 ]] && [[ -z "$debug" ]]; then
-		echo -e "No $brown$episode$foreground match found, run neet -d for debug info."
+		echo -e "No ${brown}episode$foreground match found, run neet -d for debug info."
 		exit
 	fi
 }
@@ -116,7 +116,7 @@ episode() {
 play() {
 	echo -e "Playing episode $current/$total, $brown$name$foreground."
 	mpc -q pause
-	mpv --fullscreen "$HOME/tmp/downloads/$path$format"{.avi,.mkv,.mp4}
+	mpv --fullscreen "$HOME/tmp/downloads/$path$format"
 }
 
 shopt -s extglob
