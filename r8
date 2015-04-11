@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# onodera - onodera at openmailbox dot org
+# Give ratings
+
+rating="$((RANDOM % 8))"
+
+echo "gr8 m8 i r8 $rating/8"
