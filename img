@@ -1,0 +1,6 @@
+#!/bin/bash
+#
+# onodera - onodera at openmailbox dot org
+# pqiv wrapper
+
+pqiv -i -P off -T "\$BASEFILENAME" "$@"
