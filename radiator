@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# onodera - onodera at openmailbox dot org
+# Bash transmission cli
+
+foreground="\e[0;39m"
+blue="\e[0;34m"
+brown="\e[0;33m"
+green="\e[0;32m"
+
+torrent="$(transmission-remote -l | grep -v " 100% ")"
+
+percent="$(echo "$torrent" | grep -o "[0-9]*%")"
+name="$(echo "$torrent" | grep)"
+
+echo "$percent"
