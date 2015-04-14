@@ -37,7 +37,7 @@ directory() {
 				unset IFS
 				echo "$directory" | grep -i "$(echo "$word" | tr -d ",")"
 			done
-		done | uniq -c | sed "s/   *//g"
+		done | uniq -c | sed "s/   *//g" | tac
 	)"
 
 	path="$(echo "$matches" | head -n 1 | cut -d " " -f 2-)"
@@ -63,7 +63,7 @@ directory() {
 							echo ""
 							;;
 
-							*)
+						*)
 							# TODO: Doesn't support multiple shows/lines
 							echo "$name | $mostlikely" > "$neetdir/save"
 							echo ""
@@ -84,8 +84,11 @@ directory() {
 episode() {
 	episodes="$(ls "$escapismdir/$path" | grep ".avi$\|.mkv$\|.mp4$")"
 
-	# TODO: Add formats
-	format="$(echo "$episodes" | grep "E$current")"
+	zerocount="$(($(echo "$total" | wc -c) - $(echo "$current" | wc -c)))"
+	# TODO: Add if statement here if zerocount = 0?
+	zero="$(printf "0%.0s" $(seq "$zerocount"))"
+	format="$(echo "$episodes" | grep "E$zero$current")"
+
 	count="$(echo "$format" | grep -v "^$" | wc -l)"
 
 	if [[ "$count" -eq 0 ]] && [[ -z "$debug" ]]; then
@@ -142,7 +145,8 @@ if [[ "$#" -ge 1 ]]; then
 				*)
 					width="$(echo "$inputtotal" | wc -m)"
 					count="$((5 - width))"
-					space="$(printf " %.0s" $(eval echo "{1..$count}"))"
+					# TODO: space="$(printf " %.0s" $(eval echo "{1..$count}"))"
+					space="$(printf " %.0s" $(seq "$count"))"
 
 					sed -i "/#         \| $inputcatagory/a - \[1\/$inputtotal\]$space\| $inputname" "$neetdir/list"
 					echo ""
@@ -156,7 +160,7 @@ if [[ "$#" -ge 1 ]]; then
 		-c)
 			# TODO: Finish this
 			;;
-		-d)			
+		-d)
 			debug=true
 			info
 			directory
@@ -181,8 +185,8 @@ if [[ "$#" -ge 1 ]]; then
 			echo ""
 
 			echo "episode() {"
-			echo -e "$(echo "$episodes" | sed "s/^/    /g")"
-			echo "$format"
+			echo -e "    zero = $brown$zero$foreground"
+			echo -e "    format = $brown$format$foreground"
 			echo "}"
 			echo ""
 
