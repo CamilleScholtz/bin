@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # onodera - onodera at openmailbox dot org
-# A small script to easily resize album art
+# A small script to easily resize and view album art
 
 # TODO: -a doesn't resize covers with unicode in the path (or something)
 

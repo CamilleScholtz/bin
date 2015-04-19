@@ -3,8 +3,6 @@
 # onodera - onodera at openmailbox dot org
 # A script to easily play and manage your animu/kdrama/etc.
 
-# TODO: Disable config.bak
-# TODO: Remove "tr -d "\r""s?
 # TODO: neet -a add escpism to all catagories
 
 escapismdir="$HOME/tmp/downloads"
@@ -19,7 +17,7 @@ info() {
 
 	active="$(echo "$list" | grep "+")"
 
-	name="$(echo "$active" | cut -d "|" -f 2- | cut -c 2- | tr -d "\r")"
+	name="$(echo "$active" | cut -d "|" -f 2- | cut -c 2-)"
 	if [[ -z "$current" ]]; then
 		current="$(echo "$active" | cut -d "/" -f 1 | cut -d "[" -f 2-)"
 	fi
@@ -30,6 +28,7 @@ directory() {
 	directories="$(ls -d "$escapismdir/"*/ | rev | cut -d "/" -f -2 | rev)"
 
 	IFS=$'\n'
+	# TODO: Make this only grep whole words
 	matches="$(
 		for directory in $directories; do
 			for word in $name; do
@@ -37,7 +36,7 @@ directory() {
 				unset IFS
 				echo "$directory" | grep -i "$(echo "$word" | tr -d ",")"
 			done
-		done | uniq -c | sed "s/   *//g" | tac
+		done | uniq -c | sed "s/   *//g" | sort | tac
 	)"
 
 	path="$(echo "$matches" | head -n 1 | cut -d " " -f 2-)"
@@ -85,9 +84,11 @@ episode() {
 	episodes="$(ls "$escapismdir/$path" | grep ".avi$\|.mkv$\|.mp4$")"
 
 	zerocount="$(($(echo "$total" | wc -c) - $(echo "$current" | wc -c)))"
-	# TODO: Add if statement here if zerocount = 0?
-	zero="$(printf "0%.0s" $(seq "$zerocount"))"
-	format="$(echo "$episodes" | grep "E$zero$current")"
+	if [[ "$zerocount" -gt 0 ]]; then
+		zero="$(printf "0%.0s" $(seq "$zerocount"))"
+	fi
+
+	format="$(echo "$episodes" | grep "E$zero$current\| $zero$current")"
 
 	count="$(echo "$format" | grep -v "^$" | wc -l)"
 
@@ -170,7 +171,6 @@ if [[ "$#" -ge 1 ]]; then
 			echo -e "    escapismdir = $brown$escapismdir$foreground"
 			echo -e "    neetdir = $brown$neetdir$foreground"
 			echo ""
-			echo -e "    active = $brown$active$foreground"
 			echo -e "    name = $brown$name$foreground"
 			echo -e "    current = $brown$current$foreground"
 			echo -e "    total = $brown$total$foreground"
@@ -185,7 +185,9 @@ if [[ "$#" -ge 1 ]]; then
 			echo ""
 
 			echo "episode() {"
-			echo -e "    zero = $brown$zero$foreground"
+			echo -e "    episode example: $brown$(echo "$episodes" | head -n 1)$foreground"
+			echo ""
+			echo -e "    zero = $brown$zero (zerocount = $zerocount)$foreground"
 			echo -e "    format = $brown$format$foreground"
 			echo "}"
 			echo ""

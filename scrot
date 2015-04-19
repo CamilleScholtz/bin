@@ -12,7 +12,7 @@ if [[ "$#" -eq 1 ]]; then
 			echo "           take fullscreen scrot"
 			;;
 		-s)
-			maim --hidecursor -s -b 3 -c 250,250,250 "$scrotdir/scrot-$(date +"%l%M%S" | sed "s/ //g").png"
+			maim --hidecursor -s -b 3 -c 250,250,250 "$scrotdir/scrot$(ls "$scrotdir" | wc -l).png"
 			notify "Scrotted selection" & disown
 			;;
 		*)
@@ -20,6 +20,6 @@ if [[ "$#" -eq 1 ]]; then
 			;;
 	esac
 else
-	maim --hidecursor "$scrotdir/scrot-$(date +"%l%M%S" | sed "s/ //g").png"
+	maim --hidecursor "$scrotdir/scrot$(ls "$scrotdir" | wc -l).png"
 	notify "Scrotted screen" & disown
 fi
