@@ -3,7 +3,12 @@
 # onodera - onodera at openmailbox dot org
 # A script that takes a scrot and display a notification
 
+## CONFIGURATION
+
+# Set location where the scrots get saves
 scrotdir="$HOME/tmp/scrot"
+
+## EXECUTE
 
 if [[ "$#" -eq 1 ]]; then
 	case "$1" in
@@ -12,6 +17,7 @@ if [[ "$#" -eq 1 ]]; then
 			echo "           take fullscreen scrot"
 			;;
 		-s)
+			# Take selection scrot
 			maim --hidecursor -s -b 3 -c 250,250,250 "$scrotdir/scrot$(ls "$scrotdir" | wc -l).png"
 			notify "Scrotted selection" & disown
 			;;
@@ -20,6 +26,7 @@ if [[ "$#" -eq 1 ]]; then
 			;;
 	esac
 else
+	# Take fullscreen scrot
 	maim --hidecursor "$scrotdir/scrot$(ls "$scrotdir" | wc -l).png"
 	notify "Scrotted screen" & disown
 fi
