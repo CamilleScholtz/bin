@@ -3,38 +3,57 @@
 # onodera - onodera at openmailbox dot org
 # Like pkgmk but for dependencies
 
+## CONFIGURATION
+
+depmkdir="/home/onodera/etc/depmk"
+
 ## FUNCTIONS
 
-# This function checks for root access
-checksudo() {
-	if [[ "$(id -u)" != 0 ]]; then
-		echo "=======> WARNING: Dependencies should be built as root."
-	fi
+# This function gets some basic info
+info() {
+	ports="$(ports -l)"
+	installed="$(pkginfo -i | cut -d " " -f 1)"
+
+	alias=$(cat "$depmkdir/alias")
 }
 
 # This function locates the Pkgfile
 pkgfile() {
-	pkgfile="$(cat "./Pkgfile")"
+	if ! [[ -f "./Pkgfile" ]]; then
+		echo "=======> ERROR: File 'Pkgfile' not found."
+		exit 1
+	else
+		pkgfile="$(cat "./Pkgfile")"
+	fi
 }
 
-# This function greps the dependencies
+# This function calculates the dependencies
 dependencies() {
-	# Create variables for all ports, all installed ports & initial dependencies.
-	ports="$(ports -l)"
-	installed="$(pkginfo -i | cut -d " " -f 1)"
-	deps="$(echo "$pkgfile" | grep "^# Depends on:" | sed "s/# Depends on: *//g" | tr -d ",")"
+	deps="$(echo "$pkgfile" | grep "^# Depends on:" | sed "s/# Depends on: *//g" | tr -d "," | tr " " "\n")"
 
-	# Check which dependencies are not installed yet
-	notinstalled="$(echo "$installed $deps" | tr " " "\n" | sort | uniq -d)"
+	# Aliasses
+	for line in $alias; do
+		original="$(echo "$line" | cut -d "=" -f 1)"
+		aliased="$(echo "$line" | cut -d "=" -f 2)"
 
-	echo "$notinstalled"
-#	for dep in $notinstalled; do
-#			location="$(echo "$ports" | grep "/$dep$")"
-#			cat "/usr/ports/$location/Pkgfile" | grep "^# Depends on:" | sed "s/# Depends on: *//g" | tr -d ","
-#	done
+		deps="$(echo "$deps" | sed "s/^$original$/$aliased/g")"
+	done
+
+	installme="$(echo "$(echo "$installed $deps" | sort | uniq -u) $deps" | sort | uniq -d)"
 }
 
 ## EXECUTE
 
+info
 pkgfile
 dependencies
+
+# install dependencies
+for dep in $installme; do
+	# Get dependency location and cd to it
+	location="$(echo "$ports" | grep "/$dep$")"
+	cd "/usr/ports/$location"
+
+	# install dependency
+	echo "pkgmk -d -i $dep"
+done
