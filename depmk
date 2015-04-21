@@ -1,0 +1,40 @@
+#!/bin/bash
+#
+# onodera - onodera at openmailbox dot org
+# Like pkgmk but for dependencies
+
+## FUNCTIONS
+
+# This function checks for root access
+checksudo() {
+	if [[ "$(id -u)" != 0 ]]; then
+		echo "=======> WARNING: Dependencies should be built as root."
+	fi
+}
+
+# This function locates the Pkgfile
+pkgfile() {
+	pkgfile="$(cat "./Pkgfile")"
+}
+
+# This function greps the dependencies
+dependencies() {
+	# Create variables for all ports, all installed ports & initial dependencies.
+	ports="$(ports -l)"
+	installed="$(pkginfo -i | cut -d " " -f 1)"
+	deps="$(echo "$pkgfile" | grep "^# Depends on:" | sed "s/# Depends on: *//g" | tr -d ",")"
+
+	# Check which dependencies are not installed yet
+	notinstalled="$(echo "$installed $deps" | tr " " "\n" | sort | uniq -d)"
+
+	echo "$notinstalled"
+#	for dep in $notinstalled; do
+#			location="$(echo "$ports" | grep "/$dep$")"
+#			cat "/usr/ports/$location/Pkgfile" | grep "^# Depends on:" | sed "s/# Depends on: *//g" | tr -d ","
+#	done
+}
+
+## EXECUTE
+
+pkgfile
+dependencies
