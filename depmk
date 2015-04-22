@@ -67,39 +67,69 @@ dependency() {
 		cd "/usr/ports/$location"
 		pkgfile
 		dependency
-	done | tac
+	done
 }
 
-## EXECUTE
-
-if [[ "$#" -ge 1 ]]; then
-	case "$1" in
-		-h|--help)
-			echo "usage: depmk [options]"
-			echo "options:"
-			echo "  -v,   --version             print version and exit"
-			echo "  -h,   --help                print help and exit"
-			;;
-		-v|--version)
-			echo "depmk 0.01"
-			;;
-		*)
-			echo "depmk: invalid option $1"
-			;;
-	esac
-else
-	info
-	pkgfile
-	installme="$(dependency)"
-
+# This function installs the dependencies
+install() {
 	for location in $installme; do
 		# cd to Pkgfile location
 		cd "/usr/ports/$location"
 
 		# Install dependency
-		pkgmk -d -i
+		pkgmk -d -i $options
 		if [[ "$?" -ge 1 ]]; then
 			exit 1
 		fi
 	done
-fi
+}
+
+## EXECUTE
+
+for flag in "$@"; do
+	case "$flag" in
+		-h|--help)
+			echo "usage: depmk [options]"
+			echo "options:"
+			echo "  -l,   --list                List dependencies of package"
+			echo "  -if,  --ignore-footprint    build dependencies without checking footprint"
+			echo "  -in,  --ignore-new          build dependencies, ignore new files in a footprint missmatch"
+			echo "  -um,  --update-md5sum       update md5sum"
+			echo "  -im,  --ignore-md5sum       build dependencies without checking md5sum"
+			echo "  -v,   --version             print version and exit"
+			echo "  -h,   --help                print help and exit"
+			exit 0
+			;;
+		-l|--list)
+			info
+			pkgfile
+			dependency
+			exit 0
+			;;
+		-if|--ignore-footprint)
+			options="$options -if"
+			;;
+		-in|--ingore-new)
+			options="$options -in"
+			;;
+		-um|--update-md5sum)
+			options="$options -um"
+			;;
+		-im|--ingore-md5sum)
+			options="$options -im"
+			;;
+		-v|--version)
+			echo "depmk 0.02"
+			exit 0
+			;;
+		*)
+			echo "depmk: invalid option $1"
+			exit 1
+			;;
+	esac
+done
+
+info
+pkgfile
+installme="$(dependency | tac)"
+install
