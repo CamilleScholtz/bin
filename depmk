@@ -5,6 +5,7 @@
 
 ## CONFIGURATION
 
+# Conig dir, make sure to use /home/username, or else it won't work with sudo/root
 depmkdir="/home/onodera/etc/depmk"
 
 ## FUNCTIONS
@@ -14,7 +15,8 @@ info() {
 	ports="$(ports -l)"
 	installed="$(pkginfo -i | cut -d " " -f 1)"
 
-	alias=$(cat "$depmkdir/alias")
+	alias="$(cat "$depmkdir/alias")"
+	order="$(cat "$depmkdir/order")"
 }
 
 # This function locates the Pkgfile
@@ -28,10 +30,10 @@ pkgfile() {
 }
 
 # This function calculates the dependencies
-dependencies() {
+dependency() {
 	deps="$(echo "$pkgfile" | grep "^# Depends on:" | sed "s/# Depends on: *//g" | tr -d "," | tr " " "\n")"
 
-	# Aliasses
+	# Alias
 	for line in $alias; do
 		original="$(echo "$line" | cut -d "=" -f 1)"
 		aliased="$(echo "$line" | cut -d "=" -f 2)"
@@ -39,21 +41,65 @@ dependencies() {
 		deps="$(echo "$deps" | sed "s/^$original$/$aliased/g")"
 	done
 
-	installme="$(echo "$(echo "$installed $deps" | sort | uniq -u) $deps" | sort | uniq -d)"
+	# Check which dependencies are not installed yet
+	notinstalled="$(echo -e "$(echo -e "$installed\n$deps" | sort | uniq -u)\n$deps" | sort | uniq -d)"
+
+	# Get dependencies of dependencies of depe...
+	# TODO: Should I use $checked here?
+	for dep in $notinstalled; do
+		# Get dependency location
+		location="$(echo "$ports" | grep "/$dep$")"
+
+		# Order
+		if [[ "$(echo "$location" | wc -l)" -ge 2 ]]; then
+			for line in $order; do
+				location="$(echo "$location" | grep "^$line/")"
+				if [[ "$?" -eq 0 ]]; then
+					# TODO: What does the 3 here actually do, should I change it?
+					break 3
+				fi
+			done
+		fi
+
+		echo "$location"
+
+		# cd to $dep location and repeat pkgfile/dependency process
+		cd "/usr/ports/$location"
+		pkgfile
+		dependency
+	done | tac
 }
 
 ## EXECUTE
 
-info
-pkgfile
-dependencies
+if [[ "$#" -ge 1 ]]; then
+	case "$1" in
+		-h|--help)
+			echo "usage: depmk [options]"
+			echo "options:"
+			echo "  -v,   --version             print version and exit"
+			echo "  -h,   --help                print help and exit"
+			;;
+		-v|--version)
+			echo "depmk 0.01"
+			;;
+		*)
+			echo "depmk: invalid option $1"
+			;;
+	esac
+else
+	info
+	pkgfile
+	installme="$(dependency)"
 
-# install dependencies
-for dep in $installme; do
-	# Get dependency location and cd to it
-	location="$(echo "$ports" | grep "/$dep$")"
-	cd "/usr/ports/$location"
+	for location in $installme; do
+		# cd to Pkgfile location
+		cd "/usr/ports/$location"
 
-	# install dependency
-	echo "pkgmk -d -i $dep"
-done
+		# Install dependency
+		pkgmk -d -i
+		if [[ "$?" -ge 1 ]]; then
+			exit 1
+		fi
+	done
+fi
