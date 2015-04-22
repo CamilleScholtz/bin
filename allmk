@@ -1,0 +1,47 @@
+#!/bin/bash
+#
+# onodera - onodera at openmailbox dot org
+# Recompile all installed packages
+
+## CONFIGURATION
+
+# Conig dir, make sure to use /home/username, or else it won't work with sudo/root
+allmkdir="/home/onodera/etc/mk"
+
+## EXECUTE
+
+ports="$(ports -l)"
+installed="$(pkginfo -i | cut -d " " -f 1)"
+
+for package in $installed; do
+	order="$(cat "$allmkdir/order")"
+	location="$(echo "$ports" | grep "/$package$")"
+
+	# Order
+	if [[ "$(echo "$location" | wc -l)" -ge 2 ]]; then
+		for line in $order; do
+			location="$(echo "$location" | grep "^$line/")"
+			if [[ "$?" -eq 0 ]]; then
+				break
+			fi
+		done
+	fi
+
+	cd "/usr/ports/$location"
+
+	echo "=======> RECOMPILING: $location"
+	read -p "Do you want to recompile this package continue? [Y/n] " answer
+	case "$answer" in
+		[Nn]*)
+			continue
+			;;
+		*)
+			sudo pkgmk -d -u -f
+			if [[ "$?" -ge 1 ]]; then
+				exit 1
+			else
+				echo "$location" >> "$allmkdir/recompile"
+			fi
+			;;
+	esac
+done
