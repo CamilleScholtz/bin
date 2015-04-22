@@ -45,8 +45,14 @@ dependency() {
 	notinstalled="$(echo -e "$(echo -e "$installed\n$deps" | sort | uniq -u)\n$deps" | sort | uniq -d)"
 
 	# Get dependencies of dependencies of depe...
-	# TODO: Should I use $checked here?
 	for dep in $notinstalled; do
+		# Check if in $checked
+		if [[ -n "$(echo "$checked" | grep " $dep ")" ]]; then
+			continue
+		else
+			checked="$checked $dep "
+		fi
+
 		# Get dependency location
 		location="$(echo "$ports" | grep "/$dep$")"
 
@@ -91,7 +97,7 @@ for flag in "$@"; do
 		-h|--help)
 			echo "usage: depmk [options]"
 			echo "options:"
-			echo "  -l,   --list                List dependencies of package"
+			echo "  -l,   --list                List uninstalled dependencies of package"
 			echo "  -if,  --ignore-footprint    build dependencies without checking footprint"
 			echo "  -in,  --ignore-new          build dependencies, ignore new files in a footprint missmatch"
 			echo "  -um,  --update-md5sum       update md5sum"
@@ -119,7 +125,7 @@ for flag in "$@"; do
 			options="$options -im"
 			;;
 		-v|--version)
-			echo "depmk 0.02"
+			echo "depmk 0.02.1"
 			exit 0
 			;;
 		*)
