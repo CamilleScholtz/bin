@@ -17,6 +17,11 @@ for package in $installed; do
 	order="$(cat "$allmkdir/order")"
 	location="$(echo "$ports" | grep "/$package$")"
 
+	# Recompile
+	if [[ -n "$(grep "$location" "$allmkdir/recompile")" ]]; then
+		continue
+	fi
+
 	# Order
 	if [[ "$(echo "$location" | wc -l)" -ge 2 ]]; then
 		for line in $order; do
@@ -30,9 +35,10 @@ for package in $installed; do
 	cd "/usr/ports/$location"
 
 	echo "=======> RECOMPILING: $location"
-	read -p "Do you want to recompile this package continue? [Y/n] " answer
+	read -p "Do you want to recompile this package? [Y/n] " answer
 	case "$answer" in
 		[Nn]*)
+			echo "$location" >> "$allmkdir/recompile"
 			continue
 			;;
 		*)
