@@ -6,7 +6,7 @@
 ## CONFIGURATION
 
 # Conig dir, make sure to use /home/username, or else it won't work with sudo/root
-depmkdir="/home/onodera/etc/depmk"
+depmkdir="/home/onodera/etc/mk"
 
 ## FUNCTIONS
 
@@ -22,6 +22,7 @@ info() {
 # This function locates the Pkgfile
 pkgfile() {
 	if ! [[ -f "./Pkgfile" ]]; then
+		# TODO: Return $location error here!
 		echo "=======> ERROR: File 'Pkgfile' not found."
 		exit 1
 	else

@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# onodera - onodera at openmailbox dot org
+# cd to port
+
+## CONFIGURATION
+
+# Conig dir
+cdpdir="/home/onodera/etc/mk"
+
+## EXECUTE
+
+if [[ "$#" -ge 1 ]]; then
+	order="$(cat "$cdpdir/order")"
+	location="$(ports -l | grep "/$@$")"
+
+	# Order
+	# TODO: This doesn't werk
+	if [[ "$(echo "$location" | wc -l)" -ge 2 ]]; then
+		for line in $order; do
+			location="$(echo "$location" | grep "^$line/")"
+			if [[ "$?" -eq 0 ]]; then
+				break 
+			fi
+		done
+	fi
+
+	cd "/usr/ports/$location" 2> "/dev/null"
+else
+	cd "/usr/ports"
+fi

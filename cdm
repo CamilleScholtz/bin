@@ -1,11 +1,8 @@
 #!/bin/bash
 #
 # onodera - onodera at openmailbox dot org
-# Cd to current playing album dir
+# cd to current playing album dir
 
-cdm() {
-	path="$(mpc -f "%file%" | head -n 1 | cut -d "/" -f -2)"
-	cd "$HOME/usr/music/$path"
-}
+location="$(mpc -f "%file%" | head -n 1 | cut -d "/" -f -2)"
+cd "$HOME/usr/music/$location"
 
-cdm
