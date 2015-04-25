@@ -22,8 +22,8 @@ info() {
 # This function locates the Pkgfile
 pkgfile() {
 	if ! [[ -f "./Pkgfile" ]]; then
-		# TODO: Return $location error here!
-		echo "=======> ERROR: File 'Pkgfile' not found."
+		# TODO: Add if statement here for $dep/
+		echo "=======> ERROR: File '$dep/Pkgfile' not found."
 		exit 1
 	else
 		pkgfile="$(cat "./Pkgfile")"
@@ -60,10 +60,10 @@ dependency() {
 		# Order
 		if [[ "$(echo "$location" | wc -l)" -ge 2 ]]; then
 			for line in $order; do
-				location="$(echo "$location" | grep "^$line/")"
-				if [[ "$?" -eq 0 ]]; then
-					# TODO: What does the 3 here actually do, should I change it?
-					break 3
+				locationorder="$(echo "$location" | grep "^$line/")"
+				if [[ -n "$locationorder" ]]; then
+					location="$locationorder"
+					break
 				fi
 			done
 		fi
