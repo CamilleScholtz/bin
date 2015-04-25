@@ -35,7 +35,7 @@ if [[ "$fileurl" == true ]]; then
 		wget --quiet "$fileurllocation" -O "/tmp/file.$type"
 	else
 		test "$fileurllocation"
-		if [[ "$?" -eq 0 ]]; then
+		if [[ "$?" -ge 1 ]]; then
 			echo "File not found."
 			exit
 		else
