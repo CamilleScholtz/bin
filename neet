@@ -130,11 +130,11 @@ shopt -s extglob
 if [[ "$#" -ge 1 ]]; then
 	case "$1" in
 		-h|--help)
-			echo "-a         add escapism" # TODO
-			echo "-c escp    set current escapism" # TODO
+#			echo "-a         add escapism" # TODO
+#			echo "-c escp    set current escapism" # TODO
 			echo "-d         debug info"
 			echo "-e         edit list"
-			echo "-s         sort list" # TODO
+#			echo "-s         sort list" # TODO
 			echo "+(++...)   increment ep"
 			echo "-(--...)   decrement ep"
 			echo "           play"
