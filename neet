@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# onodera - onodera at openmailbox dot org
-# A script to easily play and manage your animu/kdrama/etc.
+# neet - A script to easily play and manage your anime/kdrama/etc.
+# onodera, https://github.com/onodera-punpun
 
 ## CONFIGURATION
 
@@ -9,7 +9,7 @@
 configdir="$HOME/etc/neet"
 mediadir="$HOME/tmp/downloads"
 
-# Pause mpd on play
+# Pause mpd on play (requires mpc)
 pausempd=true
 
 # mpv launch options
@@ -96,7 +96,7 @@ directory() {
 		fi
 	# Throw error if there are no directory matches
 	elif [[ "$count" -eq 0 ]] && [[ -z "$debug" ]]; then
-		echo -e "No ${c1}directory$fg match found, run neet -d for debug info."
+		echo -e "No ${c1}directory$fg match found, use 'neet -d' for debug info."
 		exit
 	fi
 }
@@ -119,7 +119,7 @@ episode() {
 	# Throws error if there is not file that matches
 	count="$(echo "$format" | grep -v "^$" | wc -l)"
 	if [[ "$count" -eq 0 ]] && [[ -z "$debug" ]]; then
-		echo -e "No ${c1}episode$fg match found, run neet -d for debug info."
+		echo -e "No ${c1}episode$fg match found, use 'neet -d' for debug info."
 		exit
 	fi
 }
@@ -145,8 +145,8 @@ shopt -s extglob
 if [[ "$#" -ge 1 ]]; then
 	case "$1" in
 		-h|--help)
-#			echo "-a         add escapism" # TODO
-#			echo "-c escp    set current escapism" # TODO
+#			echo "-a         add media" # TODO
+			echo "-c media   set current media"
 			echo "-d         debug info"
 			echo "-e         edit list"
 			echo "+(++...)   increment ep"
@@ -156,7 +156,7 @@ if [[ "$#" -ge 1 ]]; then
 		-a)
 			info
 
-			read -p "Escapism name: " inputname
+			read -p "Media name: " inputname
 			while read -p "Episode count: " inputtotal; do
 				if [[ -n "$(echo "$inputtotal" | grep -o "[A-Za-z]")" ]]; then
 					echo -e "${c1}Episode count can only contain numbers, try again.$fg"
@@ -194,7 +194,30 @@ if [[ "$#" -ge 1 ]]; then
 			esac
 			;;
 		-c)
-			# TODO: Finish this
+			info
+
+			# Get count of available media
+			available="$(echo "$list" | grep -v "^$\|/\|$name" | nl | sed "s/	/ /g")"
+			count="$(echo "$available" | wc -l)"
+
+			echo -e "$c1$name$fg is the curent active media."
+			echo ""
+			echo "Media:"
+			echo "$available"
+			read -p "Change to? [1-$count] " answer
+			if [[ -n "$(seq "$count" | grep "^$answer$")" ]]; then
+				# TODO: The cut might fuck up if there are less than 10 shows
+				active="$(echo "$available" | cut -d $'\n' -f $answer | cut -c 8-)"
+				echo -e "The active media is now $c1$active$fg."
+
+				# Remove old +
+				sed -i "s/^+ //g" "$configdir/list"
+
+				# Add new +
+				sed -i "/$active/ { N; s/\n/&+ /g }" "$configdir/list"
+			else
+				echo "$answer is not a valid answer."
+			fi
 			;;
 		-d)
 			debug=true
