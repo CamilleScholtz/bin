@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# punf - Upload files/scrots to uguu.se/pomf.se
+# punf - Upload files/scrots/urls/stdin to uguu.se/pomf.se
 # onodera, https://github.com/onodera-punpun
 
 # TODO: -s and * don't work togheter (as expected), give an error or something
