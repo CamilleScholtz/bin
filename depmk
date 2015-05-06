@@ -5,7 +5,8 @@
 
 ## CONFIGURATION
 
-# Conig dir, make sure to use /home/username, or else it won't work with sudo/root
+# Conig dir, make sure to use /home/username, or else it won't work with root
+# This is where the order/alias file is stored
 depmkdir="/home/onodera/etc/mk"
 
 ## FUNCTIONS
@@ -84,7 +85,7 @@ install() {
 		cd "/usr/ports/$location"
 
 		# Install dependency
-		pkgmk -d -i $options
+		pkgmk -d $options
 		if [[ "$?" -ge 1 ]]; then
 			exit 1
 		fi
@@ -99,6 +100,7 @@ for flag in "$@"; do
 			echo "usage: depmk [options]"
 			echo "options:"
 			echo "  -l,   --list                List uninstalled dependencies of package"
+			echo "  -i,   --install             Build and install dependencies"
 			echo "  -if,  --ignore-footprint    build dependencies without checking footprint"
 			echo "  -in,  --ignore-new          build dependencies, ignore new files in a footprint missmatch"
 			echo "  -um,  --update-md5sum       update md5sum"
@@ -113,6 +115,9 @@ for flag in "$@"; do
 			dependency
 			exit 0
 			;;
+		-i|--install)
+			options="$options -i"
+			;;
 		-if|--ignore-footprint)
 			options="$options -if"
 			;;
@@ -126,7 +131,7 @@ for flag in "$@"; do
 			options="$options -im"
 			;;
 		-v|--version)
-			echo "depmk 0.02.1"
+			echo "depmk 0.03"
 			exit 0
 			;;
 		*)
