@@ -12,13 +12,16 @@ fg="$(grep "fg" "$HOME/.fvwm/config" | tail -c 9 | head -c -3)"
 # Set font
 font=-artwiz-cure-medium-r-normal--11-110-75-75-p-90-iso8859-1
 
+# Set font width
+fontwidth=5
+
 
 ## EXECUTE
 
 if [[ "$#" -ge 1 ]]; then
 	case "$@" in
 		-h|--help)
-			echo "usage: notify [message]"
+			echo "usage: notify [options] [message]"
 			echo "options:"
 			echo "  -v,   --version             print version and exit"
 			echo "  -h,   --help                print help and exit"
@@ -30,7 +33,7 @@ if [[ "$#" -ge 1 ]]; then
 			;;
 		*)
 			# Calculate width & position of bar
-			width="$(($(echo "      $@      " | wc -m) * 5))"
+			width="$(($(echo "  $@  " | wc -m) * fontwidth))"
 			left="$((1859 - width))"
 
 			# Kill old notifycation
