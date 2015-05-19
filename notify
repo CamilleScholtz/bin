@@ -1,41 +1,49 @@
 #!/bin/bash
 #
-# onodera - onodera at openmailbox dot org
-# Display notifications using bar
+# notify - Display notifications using bar
+# onodera, https://github.com/onodera-punpun
 
-notifydir="$HOME/etc/notify"
+## CONFIGURATION
 
-background="$(grep "^Colorset 1" "$HOME/etc/fvwm/config" | tail -c 9 | head -c 6)"
-foreground="$(grep "^*background" "$HOME/etc/Xresources" | tail -c 7)"
+# Set colors
+bg="$(grep "bg" "$HOME/.fvwm/config" | tail -c 7)"
+fg="$(grep "fg" "$HOME/.fvwm/config" | tail -c 9 | head -c -3)"
 
-font=-gohu-gohufont-medium-r-normal--14-100-100-100-c-80-iso10646-1,-misc-fixed-medium-r-normal-ja-13-120-75-75-c-120-iso10646-1
+# Set font
+font=-artwiz-cure-medium-r-normal--11-110-75-75-p-90-iso8859-1
+
+
+## EXECUTE
 
 if [[ "$#" -ge 1 ]]; then
 	case "$@" in
-		-h)
-			echo "-c         clear notifications"
-			echo "-u         unread notification count"
-			echo "msg        send notification"
-			echo "           read notifications"
-			exit
+		-h|--help)
+			echo "usage: notify [message]"
+			echo "options:"
+			echo "  -v,   --version             print version and exit"
+			echo "  -h,   --help                print help and exit"
+			exit 0
 			;;
-		-c)
-			cat "/dev/null" > "$notifydir/notifications"
-			;;
-		-u)
-			notifications="$(cat "$notifydir/notifications")"
-
-			echo "$notifications" | grep -v "^$" |  wc -l
+		-v|--version)
+			echo "notify 0.4"
+			exit 0
 			;;
 		*)
-			echo "$@" >> "$notifydir/notifications"
+			# Calculate width & position of bar
+			width="$(($(echo "      $@      " | wc -m) * 5))"
+			left="$((1859 - width))"
+
+			# Kill old notifycation
+			pkill -f -n "FFEEEEE"
+
+			# Display notifcation
+			(echo "%{c}$@" ; sleep 4) |
+			lemonbar -g ${width}x56+$left+1090 -d -f $font -B \#FF$bg -F \#FF$fg & disown
 			;;
 	esac
 else
-	notifications="$(cat "$notifydir/notifications")"
-
-	echo "$notifications"
+	echo "Please specify a message."
+	exit 1
 fi
 
-#(echo "%{c}$@" ; sleep 4) |
-#lemonbar -g 800x40+560+1120 -d -f $font -B \#FF$background -F \#FF$foreground &
+
