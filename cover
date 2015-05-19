@@ -13,6 +13,7 @@ musicdir="$HOME/media/music"
 # Set cover size
 size=160x160
 
+# Set colors
 fg="\e[0;39m"
 c1="\e[1;33m"
 
@@ -22,11 +23,15 @@ c1="\e[1;33m"
 if [[ "$#" -ge 1 ]]; then
 	case "$1" in
 		-h|--help)
-			echo "-a         resize all covers"
-			echo "-c         resize current playing album cover"
-			echo "           show current playing album cover "
+			echo "usage: cover [options]"
+			echo "options:"
+			echo "  -a,   --all                 resize all covers"
+			echo "  -c,   --current             resize current playing album cover"
+			echo "  -v,   --version             print version and exit"
+			echo "  -h,   --help                print help and exit"
+			exit 0
 			;;
-		-a)
+		-a|--all)
 			path="$(find "$musicdir" -name "cover.*" | sort)"
 
 			all="$(echo "$path" | wc -l)"
@@ -53,7 +58,7 @@ if [[ "$#" -ge 1 ]]; then
 					;;
 			esac
 			;;
-		-c)
+		-c|--current)
 			path="$(mpc -f "%file%" | cut -d $'\n' -f 1 | cut -f 1-2 -d "/")"
 
 			convert "$musicdir/$path/cover."* -resize $size! "$musicdir/$path/cover_popup.png" 2> "/dev/null"
@@ -64,8 +69,12 @@ if [[ "$#" -ge 1 ]]; then
 				echo "This album doesn't have a cover."
 			fi
 			;;
+		-v|--version)
+			echo "cover 0.7"
+			exit 0
 		*)
 			echo "Invalid option, use -h for help."
+			exit 1
 			;;
 	esac
 else
@@ -75,5 +84,6 @@ else
 
 	if [[ "$?" -ge 1 ]]; then
 		echo "This album doesn't have a cover."
+		exit 1
 	fi
 fi
