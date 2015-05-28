@@ -41,6 +41,12 @@ info() {
 
 # This function tries to fuzzy find the right directory
 directory() {
+	# Check if the show already has an alias
+	if [[ -n "$(grep "^$name=" "$configdir/alias")" ]]; then
+		path="$(grep "^$name=" "$configdir/alias" | cut -d "=" -f 2)"
+		return
+	fi
+
 	# Lists all directories in mediadir
 	directories="$(ls -d "$mediadir/"*/ | rev | cut -d "/" -f -2 | rev)"
 
@@ -64,31 +70,30 @@ directory() {
 	# Count results
 	directorycount="$(echo "$path" | wc -l)"
 
-	# Logic for if there are two or more matches with nearly identical names
-	if [[ "$directorycount" -ge 2 ]]; then
-		if [[ -n "$(grep "^$name=" "$configdir/save")" ]]; then
-			path="$(grep "^$name=" "$configdir/save" | cut -d "=" -f 2)"
+	# Create alias
+	if [[ "$directorycount" -eq 1 ]]; then
+		echo "Alias set."
+		echo "$name=$path" > "$configdir/alias"
+	elif [[ "$directorycount" -ge 2 ]]; then
+		echo -e "There are $directorycount directories that match $c1$name$fg:"
+		echo ""
+		echo -e "$(echo "$path" | uniq | nl | sed "s/	/ /g")"
+		echo ""
+		read -p "Which directory would you like to use? [1-$directorycount] " answer
+		if [[ -n "$(seq "$directorycount" | grep "^$answer$")" ]]; then
+			echo ""
+			echo "Alias set."
+			echo "$name=$(echo "$path" | cut -d $'\n' -f $answer)" > "$configdir/alias"
+			path="$(echo "$path" | cut -d $'\n' -f $answer)"
+			echo ""
 		else
-			echo -e "There are $directorycount directories that match $c1$name$fg:"
-			echo ""
-			echo -e "$(echo "$path" | uniq | nl | sed "s/	/ /g")"
-			echo ""
-			read -p "Which directory would you like to use? [1-$directorycount] " answer
-			if [[ -n "$(seq "$directorycount" | grep "^$answer$")" ]]; then
-				echo ""
-				echo "Directory set."
-				echo "$name=$(echo "$path" | cut -d $'\n' -f $answer)" > "$configdir/save"
-				path="$(echo "$path" | cut -d $'\n' -f $answer)"
-				echo ""
-			else
-				echo "$answer is not a valid answer."
-				exit 1
-			fi
+			echo "$answer is not a valid answer."
+			exit 1
 		fi
 	# Throw an error if there are no directory matches
-	elif [[ "$directorycount" -eq 0 ]] && [[ -z "$debug" ]]; then
+	else 
 		echo -e "No ${c1}directory$fg match found, use 'neet -d' for debug info."
-		exit
+		exit 1
 	fi
 }
 
@@ -111,9 +116,8 @@ episode() {
 	episodecount="$(echo "$format" | grep -v "^$" | wc -l)"
 	if [[ "$episodecount" -eq 0 ]] && [[ -z "$debug" ]]; then
 		echo -e "No ${c1}episode$fg match found, use 'neet -d' for debug info."
-		exit
+		exit 1
 	fi
-# TODO: Change to options
 }
 
 # This function pauses mpd, and starts mpv
@@ -137,58 +141,16 @@ shopt -s extglob
 if [[ "$#" -ge 1 ]]; then
 	case "$1" in
 		-h|--help)
-			echo "usage: neet [options]"
+			echo "usage: neet [options] [+/-]"
+			echo ""
 			echo "options:"
-#			echo "-a         add media" # TODO
-			echo "  -a,   --active              set active media"
-			echo "  -d,   --debug               display debug info"
-			echo "  -e,   --edit                edit list"
-			echo "  +(++...)                    increment playing episode"
-			echo "  -(--...)                    decrement playing episode"
-			echo "  -v,   --version             print version and exit"
-			echo "  -h,   --help                print help and exit"
+			echo "  -a,   --active        set active media"
+			echo "  -d,   --debug         display debug info"
+			echo "  -e,   --edit          edit list"
+			echo "  -v,   --version       print version and exit"
+			echo "  -h,   --help          print help and exit"
 			exit 0
 			;;
-		#-a)
-		#	info
-
-		#	read -p "Media name: " inputname
-		#	while read -p "Episode count: " inputtotal; do
-		#		if [[ -n "$(echo "$inputtotal" | grep -o "[A-Za-z]")" ]]; then
-		#			echo -e "${c1}Episode count can only contain numbers, try again.$fg"
-		#		else
-		#			break
-		#		fi
-		#	done
-		#	while read -p "Catagory/genre: " inputcatagory; do
-		#		if [[ -z "$(echo "$list" | grep "#" | grep "| $inputcatagory$")" ]]; then
-		#			echo -e "${c1}Catagory $inputcatagory not in list, try again.$fg"
-		#		else
-		#			break
-		#		fi
-		#	done
-		#	echo ""
-		#	echo -e "Adding $c1$inputname$fg with $c1$inputtotal$fg episodes to $c1$inputcatagory$fg."
-		#	read -p "Is this information correct? [Y/n] " answer
-		#	case "$answer" in
-		#		[Nn*])
-		#			exit
-		#			;;
-		#		*)
-		#			width="$(echo "$inputtotal" | wc -m)"
-		#			count="$((5 - width))"
-		#			# TODO: space="$(printf " %.0s" $(eval echo "{1..$count}"))"
-		#			space="$(printf " %.0s" $(seq "$count"))"
-
-		#			sed -i "/#         \| $inputcatagory/a - \[1\/$inputtotal\]$space\| $inputname" "$configdir/list"
-		#			echo ""
-		#			echo "Added $inputcatagory to list."
-
-		#			# TODO: Finish sort and uncomment this
-		#			# neet -s
-		#			;;
-		#	esac
-		#	;;
 		-a|--active)
 			info
 
