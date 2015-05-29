@@ -42,7 +42,7 @@ info() {
 # This function tries to fuzzy find the right directory
 directory() {
 	# Check if the show already has an alias
-	if [[ -n "$(grep "^$name=" "$configdir/alias")" ]]; then
+	if [[ -n "$(grep "^$name=" "$configdir/alias")" ]] && [[ -z "$debug" ]]; then
 		path="$(grep "^$name=" "$configdir/alias" | cut -d "=" -f 2)"
 		return
 	fi
@@ -56,7 +56,6 @@ directory() {
 	matches="$(
 		for directory in $directories; do
 			for word in $name; do
-				# TODO: should IFS be unset here? seem logical but works better with set IFS...
 				unset IFS
 				echo "$directory" | grep -i "$(echo "$word" | tr -d ",")"
 			done
@@ -72,7 +71,7 @@ directory() {
 
 	# Create alias
 	if [[ "$directorycount" -eq 1 ]]; then
-		echo "Alias set."
+		echo "Show initialized. (alias set)"
 		echo "$name=$path" > "$configdir/alias"
 	elif [[ "$directorycount" -ge 2 ]]; then
 		echo -e "There are $directorycount directories that match $c1$name$fg:"
@@ -141,14 +140,14 @@ shopt -s extglob
 if [[ "$#" -ge 1 ]]; then
 	case "$1" in
 		-h|--help)
-			echo "usage: neet [options] [+/-]"
+			echo "Usage: neet [options] [+/-]"
 			echo ""
 			echo "options:"
-			echo "  -a,   --active        set active media"
-			echo "  -d,   --debug         display debug info"
-			echo "  -e,   --edit          edit list"
-			echo "  -v,   --version       print version and exit"
-			echo "  -h,   --help          print help and exit"
+			echo "  -a,   --active          set active media"
+			echo "  -d,   --debug           display debug info"
+			echo "  -e,   --edit            edit list"
+			echo "  -v,   --version         print version and exit"
+			echo "  -h,   --help            print help and exit"
 			exit 0
 			;;
 		-a|--active)
@@ -164,7 +163,6 @@ if [[ "$#" -ge 1 ]]; then
 			echo ""
 			read -p "Which show would you like to make active? [1-$listcount] " answer
 			if [[ -n "$(seq "$listcount" | grep "^$answer$")" ]]; then
-				# TODO: The cut might fuck up if there are less than 10 shows
 				active="$(echo "$available" | cut -d $'\n' -f $answer | cut -c 8-)"
 				echo ""
 				echo -e "The active media is now $c1$active$fg."
