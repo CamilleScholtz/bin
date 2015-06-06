@@ -70,6 +70,7 @@ directory() {
 	directorycount="$(echo "$path" | wc -l)"
 
 	# Create alias
+	# TODO: Fix Show initialized. in -d
 	if [[ "$directorycount" -eq 1 ]]; then
 		echo "Show initialized. (alias set)"
 		echo "$name=$path" > "$configdir/alias"
@@ -81,7 +82,7 @@ directory() {
 		read -p "Which directory would you like to use? [1-$directorycount] " answer
 		if [[ -n "$(seq "$directorycount" | grep "^$answer$")" ]]; then
 			echo ""
-			echo "Alias set."
+			echo "Show initialized. (alias set)"
 			echo "$name=$(echo "$path" | cut -d $'\n' -f $answer)" > "$configdir/alias"
 			path="$(echo "$path" | cut -d $'\n' -f $answer)"
 			echo ""
