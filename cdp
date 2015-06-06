@@ -1,31 +1,42 @@
 #!/bin/bash
 #
-# onodera - onodera at openmailbox dot org
-# cd to port
+# cdp - cd to port
+# onodera, https://github.com/onodera-punpun
 
 ## CONFIGURATION
 
-# Conig dir
-cdpdir="/home/onodera/etc/mk"
+# Config location
+config="/etc/mk.conf"
+
 
 ## EXECUTE
 
 if [[ "$#" -ge 1 ]]; then
-	order="$(cat "$cdpdir/order")"
+	order="$(grep "^order" "$config" | cut -d " " -f 2-)"
+
 	location="$(ports -l | grep "/$@$")"
 
 	# Order
-	# TODO: This doesn't werk
+	# TODO: Find a better way of doing this?
+	# TODO: Doesn't work with source
 	if [[ "$(echo "$location" | wc -l)" -ge 2 ]]; then
 		for line in $order; do
-			location="$(echo "$location" | grep "^$line/")"
-			if [[ "$?" -eq 0 ]]; then
-				break 
+			echo a
+			locationorder="$(echo "$location" | grep "^$line/")"
+			if [[ -n "$locationorder" ]]; then
+				location="$locationorder"
+				echo "$location"
+				break
 			fi
 		done
 	fi
 
-	cd "/usr/ports/$location" 2> "/dev/null"
+	if [[ -d "/usr/ports/$location" ]] && [[ -n "$location" ]]; then
+		cd "/usr/ports/$location"
+	else
+		echo "cdp: invalid port $1"
+		cd "/usr/ports"
+	fi
 else
 	cd "/usr/ports"
 fi
