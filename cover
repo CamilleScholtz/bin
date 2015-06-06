@@ -46,7 +46,7 @@ if [[ "$#" -ge 1 ]]; then
 						output="$(echo "$line" | rev | cut -d "." -f 2- | rev)"
 
 						echo -e "Resizing cover $number/$all, $c1$album$fg."
-						convert "$line" -resize $size! "${output}_popup.png" 2> "/dev/null"
+						convert "$line" -filter Lanczos -thumbnail $size! "${output}_popup.png" 2> "/dev/null"
 						if [[ "$?" -ge 1 ]]; then
 							exit
 						fi
@@ -60,7 +60,7 @@ if [[ "$#" -ge 1 ]]; then
 		-c|--current)
 			path="$(mpc -f "%file%" | cut -d $'\n' -f 1 | cut -f 1-2 -d "/")"
 
-			convert "$musicdir/$path/cover."* -resize $size! "$musicdir/$path/cover_popup.png" 2> "/dev/null"
+			convert "$musicdir/$path/cover."* -filter Lanczos -thumbnail $size! "$musicdir/$path/cover_popup.png" 2> "/dev/null"
 
 			if [[ "$?" -eq 0 ]]; then
 				echo "Cover resized successfully."
