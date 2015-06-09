@@ -13,8 +13,8 @@ key=yourkeyhere
 # Log urls
 log=false
 
-# Set log dir location
-logdir="$HOME/media/image"
+# Set log location
+logfile="$HOME/.punf"
 
 # Copy links to clipboard (requires xclip)
 clipboard=true
@@ -41,7 +41,7 @@ selection() {
 	word=selection
 }
 
-# This function sets $file an url
+# This function sets $file to a url
 url() {
 	type="$(echo "$location" | rev | cut -d "." -f 1 | rev)"
 	uploadme="/tmp/url.$type"
@@ -51,7 +51,7 @@ url() {
 	word=url
 }
 
-# This function sets $file a file
+# This function sets $file to a file
 file() {
 	if [[ -f "$location" ]]; then
 		uploadme="$location"
@@ -87,7 +87,7 @@ feedback() {
 
 	# Log url
 	if [[ "$log" == true ]]; then
-		echo "$url" >> "$logdir/punf"
+		echo "$url" >> "$logfile"
 	fi
 
 	# Open url in browser
@@ -115,31 +115,25 @@ for flag in "$@"; do
 			echo "  -h,   --help            print help and exit"
 			exit 0
 			;;
-		-s|--selection)
-			selection=true
-			;;
 		-v|--version)
 			echo "punf 0.9.1"
 			exit 0
 			;;
+		-s|--selection)
+			selection
+			;;
 		http*)
-			url=true
 			location="$flag"
+			url
 			;;
 		*)
-			file=true
 			location="$flag"
+			file
 			;;
 	esac
 done
 
-if [[ "$selection" == true ]]; then
-	selection
-elif [[ "$url" == true ]]; then
-	url
-elif [[ "$file" == true ]]; then
-	file
-else
+if [[ "$#" -eq 0 ]]; then
 	desktop
 fi
 
