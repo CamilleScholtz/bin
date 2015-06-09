@@ -3,12 +3,10 @@
 # punf - Upload files/scrots/urls to sr.ht (rip pomf & uguu)
 # onodera, https://github.com/onodera-punpun
 
-# TODO: -s and * don't work togheter (as expected), give an error or something
-
 ## CONFIGURATION
 
 # Your sr.ht key
-key=yourkeyhere
+key="$(cat "$HOME/.srht")"
 
 # Log urls
 log=false
@@ -105,8 +103,8 @@ feedback() {
 
 ## EXECUTE
 
-for flag in "$@"; do
-	case "$flag" in
+if [[ "$#" -ge 1 ]]; then
+	case "$@" in
 		-h|--help)
 			echo "usage: punf [options] [file/url]"
 			echo "options:"
@@ -123,17 +121,15 @@ for flag in "$@"; do
 			selection
 			;;
 		http*)
-			location="$flag"
+			location="$@"
 			url
 			;;
 		*)
-			location="$flag"
+			location="$@"
 			file
 			;;
 	esac
-done
-
-if [[ "$#" -eq 0 ]]; then
+else
 	desktop
 fi
 
