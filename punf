@@ -1,17 +1,20 @@
 #!/bin/bash
 #
-# punf - Upload files/scrots/urls/stdin to uguu.se/pomf.se
+# punf - Upload files/scrots/urls to sr.ht (rip pomf & uguu)
 # onodera, https://github.com/onodera-punpun
 
 # TODO: -s and * don't work togheter (as expected), give an error or something
 
 ## CONFIGURATION
 
+# Your sr.ht key
+key=yourkeyhere
+
 # Log urls
-log=true
+log=false
 
 # Set log dir location
-logdir="$HOME/usr/img"
+logdir="$HOME/media/image"
 
 # Copy links to clipboard (requires xclip)
 clipboard=true
@@ -60,16 +63,6 @@ file() {
 	word=file
 }
 
-# This function sets $file to stdin
-stdin() {
-	stdin="$(cat "/dev/stdin")"
-
-	uploadme="/tmp/stdin.txt"
-	echo "$stdin" > "$uploadme"
-
-	word=stdin
-}
-
 # This function sets $file to a full screen scrot
 desktop() {
 	uploadme="/tmp/scrot.png"
@@ -81,27 +74,11 @@ desktop() {
 
 # This function uploads the $file
 upload() {
-	if [[ "$pomf" == true ]]; then
-		url="$(curl --silent -F files[]="@$uploadme" "http://pomf.se/upload.php?output=gyazo")"
-
-		if [[ "$notify" == true ]]; then
-			notify "Pomfed $word: $url" & disown
-		fi
-
-		echo "Pomfed $word: $url"
-	else
-		url="$(curl --silent -F file="@$uploadme" "http://uguu.se/api.php?d=upload")"
-
-		if [[ "$notify" == true ]]; then
-			notify "Uguud $word: $url" & disown
-		fi
-
-		echo "Uguud $word: $url"
-	fi
+	url="$(curl --silent -F key="$key" -F file="@$uploadme" "https://sr.ht/api/upload" | cut -d '"' -f 8)"
 }
 
 # This function logs the url,  copies the url to the clipboard, and/or opens the url in your browser
-clb() {
+feedback() {
 	# Copy url to clipboard
 	if [[ "$clipboard" == true ]]; then
 		echo "$url" | xclip -selection primary
@@ -117,26 +94,33 @@ clb() {
 	if [[ "$browser" == true ]]; then
 		$BROWSER "$url"
 	fi
-}
 
+	# Send notification
+	if [[ "$notify" == true ]]; then
+		notify "Punfed $word: $url" & disown
+	fi
+
+	echo "Punfed $word: $url"
+}
 
 ## EXECUTE
 
 for flag in "$@"; do
 	case "$flag" in
 		-h|--help)
-			echo "-p         permanent/pomf upload"
-			echo "-s         upload selection scrot"
-			echo "url        download url and upload file"
-			echo "file       upload file"
-			echo "           upload desktop scrot"
+			echo "usage: punf [options] [file/url]"
+			echo "options:"
+			echo "  -s,   --selection       upload selection scrot"
+			echo "  -v,   --version         print version and exit"
+			echo "  -h,   --help            print help and exit"
 			exit 0
 			;;
-		-p)
-			pomf=true
-			;;
-		-s)
+		-s|--selection)
 			selection=true
+			;;
+		-v|--version)
+			echo "punf 0.9.1"
+			exit 0
 			;;
 		http*)
 			url=true
@@ -156,13 +140,8 @@ elif [[ "$url" == true ]]; then
 elif [[ "$file" == true ]]; then
 	file
 else
-	# Check if punf is connected to a pipe
-	if [[ -t 0 ]]; then
-		desktop
-	else
-		stdin
-	fi
+	desktop
 fi
 
 upload
-clb
+feedback
