@@ -26,6 +26,15 @@ browser=false
 
 ## FUNCTIONS
 
+# This function sets $file to your clipboard contents
+clipboard() {
+	uploadme="/tmp/clipboard.txt"
+
+	xclip -o > "$uploadme"
+
+	word=clipboard
+}
+
 # This function sets $file to a selection scrot
 selection() {
 	uploadme="/tmp/scrot.png"
@@ -108,14 +117,18 @@ if [[ "$#" -ge 1 ]]; then
 		-h|--help)
 			echo "usage: punf [options] [file/url]"
 			echo "options:"
+			echo "  -c,   --clipboard       upload your clipboard as text"
 			echo "  -s,   --selection       upload selection scrot"
 			echo "  -v,   --version         print version and exit"
 			echo "  -h,   --help            print help and exit"
 			exit 0
 			;;
 		-v|--version)
-			echo "punf 0.9.1"
+			echo "punf 0.9.2"
 			exit 0
+			;;
+		-c|--clipboard)
+			clipboard
 			;;
 		-s|--selection)
 			selection

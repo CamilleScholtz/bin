@@ -3,10 +3,12 @@
 # onodera - onodera at openmailbox dot org
 # A script that takes a scrot and display a notification
 
+# TODO: Add feedback like punf
+
 ## CONFIGURATION
 
 # Set location where the scrots get saves
-scrotdir="$HOME/tmp/scrot"
+scrotdir="$HOME/media/image/scrot"
 
 ## EXECUTE
 

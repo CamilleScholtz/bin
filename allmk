@@ -1,24 +1,28 @@
 #!/bin/bash
 #
-# onodera - onodera at openmailbox dot org
-# Recompile all installed packages
+# allmk - Recompile all installed packages
+# onodera, https://github.com/onodera-punpun
 
 ## CONFIGURATION
 
-# Conig dir, make sure to use /home/username, or else it won't work with sudo/root
-allmkdir="/home/onodera/etc/mk"
+# Config location
+config="/etc/mk.conf"
+
+# Upgraded packages list location
+upgraded="/home/onodera/upgraded"
+
 
 ## EXECUTE
 
 ports="$(ports -l)"
 installed="$(pkginfo -i | cut -d " " -f 1)"
+order="$(grep "^order" "$config" | cut -d " " -f 2-)"
 
 for package in $installed; do
-	order="$(cat "$allmkdir/order")"
 	location="$(echo "$ports" | grep "/$package$")"
 
 	# Recompile
-	if [[ -n "$(grep "$location" "$allmkdir/recompile")" ]]; then
+	if [[ -n "$(grep "$location" "$upgraded")" ]]; then
 		continue
 	fi
 
@@ -38,7 +42,7 @@ for package in $installed; do
 	read -p "Do you want to recompile this package? [Y/n] " answer
 	case "$answer" in
 		[Nn]*)
-			echo "$location" >> "$allmkdir/recompile"
+			echo "$location" >> "$upgraded"
 			continue
 			;;
 		*)
@@ -46,7 +50,7 @@ for package in $installed; do
 			if [[ "$?" -ge 1 ]]; then
 				exit 1
 			else
-				echo "$location" >> "$allmkdir/recompile"
+				echo "$location" >> "$upgraded"
 			fi
 			;;
 	esac

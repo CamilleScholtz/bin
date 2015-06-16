@@ -19,7 +19,7 @@ kernel="$(uname -r -s)"
 init="busybox/minirc"
 uptime="$(uptime -p | cut -d " " -f 2-)"
 packages="$(pkginfo -i | wc -l)"
-wm="MVWM"
+wm="FVWM"
 font="Gohufont 14"
 
 

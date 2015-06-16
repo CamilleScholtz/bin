@@ -6,5 +6,5 @@
 ## EXECUTE
 
 # Get random r8ing and echo it 
-rating="$((RANDOM % 8))"
+rating="$((RANDOM % 9))"
 echo "gr8 m8 i r8 $rating/8"

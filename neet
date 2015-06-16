@@ -147,8 +147,13 @@ if [[ "$#" -ge 1 ]]; then
 			echo "  -a,   --active          set active media"
 			echo "  -d,   --debug           display debug info"
 			echo "  -e,   --edit            edit list"
+			echo "  -n,   --no-resume       Disable resume playback"
 			echo "  -v,   --version         print version and exit"
 			echo "  -h,   --help            print help and exit"
+			exit 0
+			;;
+		-v|--version)
+			echo "neet 0.3.2"
 			exit 0
 			;;
 		-a|--active)
@@ -179,7 +184,11 @@ if [[ "$#" -ge 1 ]]; then
 				exit 1
 			fi
 			;;
-		-d|--debug)
+		
+		-n|--no-resume)
+			options+=" --no-resume-playback"
+			;;
+-d|--debug)
 			debug=true
 			info
 			directory
@@ -218,6 +227,12 @@ if [[ "$#" -ge 1 ]]; then
 			;;
 		-e|--edit)
 			$EDITOR "$configdir/list"
+			exit 0
+			;;
+		-n|--no-resume)
+			info
+
+			options+=" --no-resume-playback"
 			;;
 		+(+))
 			info
@@ -230,10 +245,6 @@ if [[ "$#" -ge 1 ]]; then
 			if [[ "$increment" -le "$total" ]]; then
 				sed -i "s/+ $current\/$total/+ $increment\/$total/" "$configdir/list"
 				current="$increment"
-
-				directory
-				episode
-				play
 			else
 				echo -n -e "$c1$name$fg completed! Would you like to remove this show? [y/N] "
 				read -p "" answer
@@ -260,19 +271,11 @@ if [[ "$#" -ge 1 ]]; then
 			if [[ "$decrement" -ge 1 ]]; then
 				sed -i "s/+ $current\/$total/+ $decrement\/$total/" "$configdir/list"
 				current="$decrement"
-
-				directory
-				episode
-				play
 			else
 				echo "Can't go lower than 1!"
 				exit 1
 			fi
 			shift
-			;;
-		-v|--version)
-			echo "neet 0.3"
-			exit 0
 			;;
 		*)
 			echo "Invalid option, use -h for help."
@@ -281,7 +284,8 @@ if [[ "$#" -ge 1 ]]; then
 	esac
 else
 	info
-	directory
-	episode
-	play
 fi
+
+directory
+episode
+play
