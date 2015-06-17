@@ -50,18 +50,18 @@ selection() {
 
 # This function sets $file to a url
 url() {
-	type="$(echo "$location" | rev | cut -d "." -f 1 | rev)"
+	type="$(echo "$@" | rev | cut -d "." -f 1 | rev)"
 	uploadme="/tmp/url.$type"
 
-	wget --quiet "$location" -O "$uploadme"
+	wget --quiet "$@" -O "$uploadme"
 
 	word=url
 }
 
 # This function sets $file to a file
 file() {
-	if [[ -f "$location" ]]; then
-		uploadme="$location"
+	if [[ -f "$@" ]]; then
+		uploadme="$@"
 	else
 		echo "File not found."
 		exit 1
@@ -87,30 +87,37 @@ upload() {
 # This function logs the url,  copies the url to the clipboard, and/or opens the url in your browser
 feedback() {
 	# Copy url to clipboard
-	if [[ "$clipboard" == true ]]; then
+	if [[ "$clipboard" == true ]] && [[ "$quiet" == false ]]; then
 		echo "$url" | xclip -selection primary
 		echo "$url" | xclip -selection clipboard
 	fi
 
 	# Log url
-	if [[ "$log" == true ]]; then
+	if [[ "$log" == true ]] && [[ "$quiet" == false ]]; then
 		echo "$url" >> "$logfile"
 	fi
 
 	# Open url in browser
-	if [[ "$browser" == true ]]; then
+	if [[ "$browser" == true ]] && [[ "$quiet" == false ]]; then
 		$BROWSER "$url"
 	fi
 
 	# Send notification
-	if [[ "$notify" == true ]]; then
+	if [[ "$notify" == true ]] && [[ "$quiet" == false ]]; then
 		notify "Punfed $word: $url" & disown
 	fi
-
-	echo "Punfed $word: $url"
+	
+	# Send link
+	if [[ "$quiet" == true ]]; then
+		echo "$url"
+	else
+		echo "Punfed $word: $url"
+	fi
 }
 
 ## EXECUTE
+
+quiet=false
 
 if [[ "$#" -ge 1 ]]; then
 	case "$@" in
@@ -119,6 +126,7 @@ if [[ "$#" -ge 1 ]]; then
 			echo "options:"
 			echo "  -c,   --clipboard       upload your clipboard as text"
 			echo "  -s,   --selection       upload selection scrot"
+			echo "  -q,   --quiet           disable all feedback (for scripts using punf)"
 			echo "  -v,   --version         print version and exit"
 			echo "  -h,   --help            print help and exit"
 			exit 0
@@ -133,13 +141,15 @@ if [[ "$#" -ge 1 ]]; then
 		-s|--selection)
 			selection
 			;;
+		"-q "*|"--quiet "*)
+			quiet=true
+			file "$2"
+			;;
 		http*)
-			location="$@"
-			url
+			url "$1"
 			;;
 		*)
-			location="$@"
-			file
+			file "$1"
 			;;
 	esac
 else
