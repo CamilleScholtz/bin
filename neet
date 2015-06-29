@@ -7,7 +7,7 @@
 
 # Set media and config dir locations
 configdir="$HOME/.neet"
-mediadir="$HOME/tmp/downloads"
+mediadir="$HOME/media/video"
 
 # Pause mpd on play (requires mpc)
 pausempd=true
@@ -110,7 +110,7 @@ episode() {
 
 	# Greps the right file (hopefully)
 	# Currently supports "E01", "ep01" & " 01"
-	format="$(echo "$episodes" | grep "E$zero$current\|ep$zero$current\| $zero$current")"
+	format="$(echo "$episodes" | grep "E$zero$current[^0-9]\|ep$zero$current[^0-9]\| $zero$current[^0-9]")"
 
 	# Throws error if there is not file that matches
 	episodecount="$(echo "$format" | grep -v "^$" | wc -l)"

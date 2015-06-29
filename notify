@@ -10,10 +10,7 @@ bg="$(grep "bg" "$HOME/.fvwm/config" | tail -c 7)"
 fg="$(grep "fg" "$HOME/.fvwm/config" | tail -c 9 | head -c -3)"
 
 # Set font
-font=-artwiz-cure-medium-r-normal--11-110-75-75-p-90-iso8859-1
-
-# Set font width
-fontwidth=5
+font=-artwiz-cure-medium-r-normal--11-110-75-75-p-90-iso8859-1,-FreeType-Kochi-Medium-R-Normal--9-90-75-75-P-77-ISO10646-1,-FreeType-Baekmuk-Medium-R-Normal--9-90-75-75-P-38-ISO10646-1
 
 
 ## EXECUTE
@@ -32,21 +29,15 @@ if [[ "$#" -ge 1 ]]; then
 			exit 0
 			;;
 		*)
-			# Calculate width & position of bar
-			width="$(($(echo "  $@  " | wc -m) * fontwidth))"
-			left="$((1859 - width))"
-
 			# Kill old notifycation
-			pkill -f -n "FFEEEEE"
+			pkill -f -n "00$bg"
 
 			# Display notifcation
-			(echo "%{c}$@" ; sleep 4) |
-			lemonbar -g ${width}x56+$left+1090 -d -f $font -B \#FF$bg -F \#FF$fg & disown
+			(echo "%{B#FF$bg}%{r}     $@     " ; sleep 4) |
+			lemonbar -g 800x56+1059+1090 -d -f $font -B \#00$bg -F \#FF$fg & disown
 			;;
 	esac
 else
 	echo "Please specify a message."
 	exit 1
 fi
-
-

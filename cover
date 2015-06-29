@@ -42,6 +42,7 @@ if [[ "$#" -ge 1 ]]; then
 					IFS=$'\n'
 					for line in $path; do
 						number="$((number + 1))"
+						# TODO: fix CD1/CD2 stuff
 						album="$(echo "$line" | cut -d "/" -f 7 | cut -d " " -f 3-)"
 						output="$(echo "$line" | rev | cut -d "." -f 2- | rev)"
 
@@ -58,7 +59,7 @@ if [[ "$#" -ge 1 ]]; then
 			esac
 			;;
 		-c|--current)
-			path="$(mpc -f "%file%" | cut -d $'\n' -f 1 | cut -f 1-2 -d "/")"
+			path="$(mpc -f "%file%" | cut -d $'\n' -f 1 | rev | cut -d "/" -f 2- | rev)"
 
 			convert "$musicdir/$path/cover."* -filter Lanczos -thumbnail $size! "$musicdir/$path/cover_popup.png" 2> "/dev/null"
 

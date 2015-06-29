@@ -19,7 +19,7 @@ kernel="$(uname -r -s)"
 init="busybox/minirc"
 uptime="$(uptime -p | cut -d " " -f 2-)"
 packages="$(pkginfo -i | wc -l)"
-wm="FVWM"
+wm="wmutils"
 font="Gohufont 14"
 
 
@@ -27,7 +27,7 @@ font="Gohufont 14"
 
 # Resize terminal
 if [[ -n "$DISPLAY" ]] && [[ "$resize" == true ]]; then
-	xdo resize -w 530 -h 190
+	#wtp 0 0 200 500 "$(pfw)"
 	sleep 0.1
 fi
 
