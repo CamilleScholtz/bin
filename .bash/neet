@@ -1,0 +1,292 @@
+#!/bin/bash
+#
+# neet - A script to easily play and manage your anime/kdrama/etc.
+# onodera, https://github.com/onodera-punpun
+
+## CONFIGURATION
+
+# Set media and config dir locations
+configdir="$HOME/.neet"
+mediadir="$HOME/media/video"
+
+# Pause mpd on play (requires mpc)
+pausempd=true
+
+# mpv launch options
+options="--fullscreen"
+
+# Set colors
+fg="\e[0;39m"
+c1="\e[1;33m"
+c2="\e[1;30m"
+
+
+## FUNCTIONS
+
+# This function gets basic media info, like the active show name, episode count and total episodes
+info() {
+	# Outputs entire list
+	list="$(cat "$configdir/list")"
+
+	# Get the active show (+)
+	active="$(echo "$list" | grep -B 1 "+")"
+
+	# Get the show name, current episode and total episode count
+	name="$(echo "$active" | head -n 1)"
+	if [[ -z "$current" ]]; then
+		current="$(echo "$active" | tail -n 1 | cut -d "/" -f 1 | cut -c 3-)"
+	fi
+	total="$(echo "$active" | tail -n 1 | cut -d "/" -f 2)"
+}
+
+# This function tries to fuzzy find the right directory
+directory() {
+	# Check if the show already has an alias
+#	if [[ -n "$(grep "^$name=" "$configdir/alias")" ]] && [[ -z "$debug" ]]; then
+#		path="$(grep "^$name=" "$configdir/alias" | cut -d "=" -f 2)"
+#		return
+#	fi
+
+	# Lists all directories in mediadir
+	directories="$(ls -d "$mediadir/"*/ | rev | cut -d "/" -f -2 | rev)"
+
+	# This is the actual fuzzy logic part, it compares the directory names with the active show name
+	# TODO: Make this only grep whole words
+	IFS=$'\n'
+	matches="$(
+		for directory in $directories; do
+			for word in $name; do
+				unset IFS
+				echo "$directory" | grep -i "$(echo "$word" | tr -d ",")"
+			done
+		done | uniq -c | sed "s/   *//g" | sort | tac
+	)"
+
+	# This greps the output wiith the most matches
+	highest="$(echo "$matches" | head -c 1)"
+	path="$(echo "$matches" | grep "^$highest " | cut -d " " -f 2-)"
+
+	# Count results
+	directorycount="$(echo "$path" | wc -l)"
+
+	# Create alias
+	# TODO: Fix Show initialized. in -d
+	if [[ "$directorycount" -eq 1 ]]; then
+		echo "Show initialized. (alias set)"
+		echo "$name=$path" > "$configdir/alias"
+	elif [[ "$directorycount" -ge 2 ]]; then
+		echo -e "There are $directorycount directories that match $c1$name$fg:"
+		echo ""
+		echo -e "$(echo "$path" | uniq | nl | sed "s/	/ /g")"
+		echo ""
+		read -p "Which directory would you like to use? [1-$directorycount] " answer
+		if [[ -n "$(seq "$directorycount" | grep "^$answer$")" ]]; then
+			echo ""
+			echo "Show initialized. (alias set)"
+			echo "$name=$(echo "$path" | cut -d $'\n' -f $answer)" > "$configdir/alias"
+			path="$(echo "$path" | cut -d $'\n' -f $answer)"
+			echo ""
+		else
+			echo "$answer is not a valid answer."
+			exit 1
+		fi
+	# Throw an error if there are no directory matches
+	else 
+		echo -e "No ${c1}directory$fg match found, use 'neet -d' for debug info."
+		exit 1
+	fi
+}
+
+# This function tries to get the right file name
+episode() {
+	# Lists all video files in the directory
+	episodes="$(ls "$mediadir/$path" | grep ".avi$\|.mkv$\|.mp4$")"
+
+	# Calculates the zeros in a file name (for example two in 002 and one in 089)
+	zerocount="$(($(echo "$total" | wc -c) - $(echo "$current" | wc -c)))"
+	if [[ "$zerocount" -gt 0 ]]; then
+		zero="$(printf "0%.0s" $(seq "$zerocount"))"
+	fi
+
+	# Greps the right file (hopefully)
+	# Currently supports "E01", "ep01" & " 01"
+	format="$(echo "$episodes" | grep "E$zero$current[^0-9]\|ep$zero$current[^0-9]\| $zero$current[^0-9]")"
+
+	# Throws error if there is not file that matches
+	episodecount="$(echo "$format" | grep -v "^$" | wc -l)"
+	if [[ "$episodecount" -eq 0 ]] && [[ -z "$debug" ]]; then
+		echo -e "No ${c1}episode$fg match found, use 'neet -d' for debug info."
+		exit 1
+	fi
+}
+
+# This function pauses mpd, and starts mpv
+play() {
+	echo -e "Playing episode $current/$total, $c1$name$fg."
+
+	# Pause mpd
+	if [[ "$pausempd" == true ]]; then
+		mpc -q pause
+	fi
+
+	# Start mpv
+#	mpv $options "$mediadir/$path$format"
+echo a
+}
+
+
+## EXECUTE
+
+shopt -s extglob
+
+if [[ "$#" -ge 1 ]]; then
+	case "$1" in
+		-h|--help)
+			echo "Usage: neet [options] [+/-]"
+			echo ""
+			echo "options:"
+			echo "  -a,   --active          set active media"
+			echo "  -d,   --debug           display debug info"
+			echo "  -e,   --edit            edit list"
+			echo "  -n,   --no-resume       Disable resume playback"
+			echo "  -v,   --version         print version and exit"
+			echo "  -h,   --help            print help and exit"
+			exit 0
+			;;
+		-v|--version)
+			echo "neet 0.3.2"
+			exit 0
+			;;
+		-a|--active)
+			info
+
+			# Get count of available media
+			available="$(echo "$list" | grep -v "^$\|/\|$name" | nl | sed "s/	/ /g")"
+			listcount="$(echo "$available" | wc -l)"
+
+			echo -e "$c1$name$fg is currently active, there are $listcount other available shows:"
+			echo ""
+			echo "$available"
+			echo ""
+			read -p "Which show would you like to make active? [1-$listcount] " answer
+			if [[ -n "$(seq "$listcount" | grep "^$answer$")" ]]; then
+				active="$(echo "$available" | cut -d $'\n' -f $answer | cut -c 8-)"
+				echo ""
+				echo -e "The active media is now $c1$active$fg."
+
+				# Remove old +
+				sed -i "s/^+ //g" "$configdir/list"
+
+				# Add new +
+				sed -i "/$active/ { N; s/\n/&+ /g }" "$configdir/list"
+				exit 0
+			else
+				echo "$answer is not a valid answer."
+				exit 1
+			fi
+			;;
+		
+		-n|--no-resume)
+			options+=" --no-resume-playback"
+			;;
+-d|--debug)
+			debug=true
+			info
+			directory
+			episode
+
+			echo -e "${c2}CONFIGURATION$fg"
+			echo -e "    configdir = $c1$configdir$fg"
+			echo -e "    mediadir = $c1$mediadir$fg"
+			echo ""
+			echo -e "${c2}FUNCTION - info$fg"
+			echo -e "    name = $c1$name$fg"
+			echo -e "    current = $c1$current$fg"
+			echo -e "    total = $c1$total$fg"
+			echo ""
+			echo -e "${c2}FUNCTION - directory$fg"
+			echo -e "$( echo "$matches" | sed "s/ / = \\$c1/1" | sed "s/$/\\$fg/g" | sed "s/^/    /g")"
+			echo ""
+			echo -e "    highest = $c1$highest$fg"
+			echo -e "    directorycount = $c1$directorycount$fg"
+			echo -e "    path = $c1$mediadir/$path$fg"
+			echo ""
+			echo -e "${c2}FUNCTION - episode$fg"
+			echo -e "    episodecount = $c1$episodecount$fg"
+			echo -e "    zero = $c1$zero (zerocount = $zerocount)$fg"
+			echo -e "    format = $c1$format$fg"
+			echo ""
+			echo -e "${c2}FUNCTION - play$fg"
+			echo "    $mediadir/$path$format"
+			if [[ -f "$mediadir/$path$format" ]]; then
+				echo -e "    ${c1}File exists!$fg"
+				exit 0
+			else
+				echo -e "    ${c1}File does NOT exist!$fg"
+				exit 1
+			fi
+			;;
+		-e|--edit)
+			$EDITOR "$configdir/list"
+			exit 0
+			;;
+		-n|--no-resume)
+			info
+
+			options+=" --no-resume-playback"
+			;;
+		+(+))
+			info
+
+			# Get current episode and increment it by one
+			amount="$(echo "$1" | wc -m)"
+			increment="$((current - 1 + amount))"
+
+			shift
+			if [[ "$increment" -le "$total" ]]; then
+				sed -i "s/+ $current\/$total/+ $increment\/$total/" "$configdir/list"
+				current="$increment"
+			else
+				echo -n -e "$c1$name$fg completed! Would you like to remove this show? [y/N] "
+				read -p "" answer
+				case "$answer" in
+					[Yy]*)
+						sed -i "/^$name$/d" "$configdir/list"
+						sed -i "/^+ /d" "$configdir/list"
+						;;
+					*)
+						exit 0
+						;;
+				esac
+			fi
+			shift
+			;;
+		+(-))
+			info
+
+			# Get current episode and decrement it by one
+			amount="$(echo "$1" | wc -m)"
+			decrement="$((current + 1 - amount))"
+
+			shift
+			if [[ "$decrement" -ge 1 ]]; then
+				sed -i "s/+ $current\/$total/+ $decrement\/$total/" "$configdir/list"
+				current="$decrement"
+			else
+				echo "Can't go lower than 1!"
+				exit 1
+			fi
+			shift
+			;;
+		*)
+			echo "Invalid option, use -h for help."
+			exit 1
+			;;
+	esac
+else
+	info
+fi
+
+directory
+episode
+play
