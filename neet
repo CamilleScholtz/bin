@@ -3,13 +3,15 @@
 # neet - A script to easily play and manage your anime/kdrama/etc.
 # onodera, https://github.com/onodera-punpun
 
-# TODO: Fix "sad" bug
-
 ## CONFIGURATION
 
 # Set media and config dir locations
 set configdir $HOME/.neet
-set mediadir $HOME/media/video
+set mediadir $HOME/media/videos
+
+# Set colors
+set fg normal
+set c1 yellow
 
 # Pause mpd on play (requires mpc)
 set pausempd true
@@ -37,7 +39,7 @@ end
 # This function tries to fuzzy find the right directory
 function directory
 	# Check if the show already has an alias
-	if test (grep "^$name=" $configdir/alias)
+	if begin test (grep "^$name=" $configdir/alias); and test $realias = false; end
 		set -g path (grep "^$name=" $configdir/alias | cut -d = -f 2)
 		return
 	end
@@ -52,12 +54,13 @@ function directory
 			for word in (echo $name | tr \  \n)
 				echo $directory | grep -i $word
 			end
-		end | cut -d / -f 2 | uniq -c | sort | sed "s/   *//g"
+		end | cut -d / -f 2 | uniq -c | sort | sed s/\ \ \ \*//g
 	)
 
 	# This greps the output wiith the most matches
+	# TODO Fix highest with slices
 	set highest (echo $matches | head -c 1)
-	set -g path (echo $matches | grep "^$highest " | cut -d \  -f 2-)
+	set -g path (echo $matches[-1] | cut -d \  -f 2-)
 
 	# Count results
 	set count (echo $path | wc -l)
@@ -68,8 +71,8 @@ function directory
 		echo "Show initialized. (alias set)"
 		echo $name=$path > "$configdir/alias"
 	else if test $count -ge 2
-		echo -e "There are $count directories that match $c1$name$fg:\n"
-		echo -e "(echo $path | uniq | nl | sed "s/	/ /g")\n"
+		echo -e "There are $count directories that match "(set_color $c1)"$name"(set_color $fg)":\n"
+		echo -e "(echo $path | uniq | nl | sed s/\i/\ /g)\n"
 		read -p "Which directory would you like to use? [1-$count] " answer
 		if test (seq $count | grep "^$answer\$")
 			echo -e "\nShow initialized. (alias set)\n"
@@ -81,7 +84,7 @@ function directory
 		end
 	# Throw an error if there are no directory matches
 	else 
-		echo -e "No directory$fg match found."
+		echo "No "(set_color $c1)"directory"(set_color $fg)" match found."
 		exit 1
 	end
 end
@@ -111,14 +114,14 @@ function episode
 
 	# Throw error if nothing is found
 	if test -z $file
-		echo -e "No episode$fg match found."
+		echo "No "(set_color $c1)"episode"(set_color $fg)" match found."
 		exit 1
 	end
 end
 
 # This function pauses mpd, and starts mpv
 function play
-	echo -e "Playing episode $current/$total, $c1$name$fg."
+	echo "Playing episode $current/$total, "(set_color $c1)"$name"(set_color $fg)"."
 
 	# Pause mpd
 	if test $pausempd = true
@@ -132,7 +135,7 @@ end
 
 ## EXECUTE
 
-#shopt -s extglob
+set realias false
 
 if test (count $argv) -eq 1
 	switch $argv[1]
@@ -141,21 +144,31 @@ if test (count $argv) -eq 1
 			echo "options:"
 			echo "  -e,   --edit            edit list"
 			echo "  -n,   --no-resume       Disable resume playback"
+			echo "  -r,   --realias         Forgets current alias"
 			echo "  -v,   --version         print version and exit"
 			echo "  -h,   --help            print help and exit"
 			exit 0
 		case -v --version
-			echo "neet 0.3.2"
+			echo "neet 0.3.4"
 			exit 0
 		case -e --edit
-			$EDITOR $configdir/list
+			eval $EDITOR $configdir/list
 			exit 0
 		case -n --no-resume
 			info
 
 			set options $options --no-resume-playback
-		# TODO: Add multiple
-		case +
+		case -r --realias
+			info
+
+			set realias true
+		case "+*"
+			# Fail if there is a non + character in argv
+			if test (echo $argv[1] | sed s/+//g)
+				echo "Invalid option, use -h for help."
+				exit 1
+			end
+
 			info
 
 			# Get current episode and increment it by one
@@ -166,7 +179,7 @@ if test (count $argv) -eq 1
 				sed -i "s/+ $current\/$total/+ $increment\/$total/" "$configdir/list"
 				set current $increment
 			else
-				echo -n -e "$c1$name$fg completed! Would you like to remove this show? [y/N] "
+				echo -n ""(set_color $c1)"$name"(set_color fg)" completed! Would you like to remove this show? [y/N] "
 				read -p "" answer
 				switch $answer
 					case [Yy]*
@@ -176,8 +189,13 @@ if test (count $argv) -eq 1
 						exit 0
 				end
 			end
-		# TODO: Add multiple
-		case -
+		case "-*"
+			# Fail if there is a non - character in argv
+			if test (echo $argv[1] | sed s/-//g)
+				echo "Invalid option, use -h for help."
+				exit 1
+			end
+
 			info
 
 			# Get current episode and decrement it by one
@@ -191,7 +209,7 @@ if test (count $argv) -eq 1
 				echo "Can't go lower than 1!"
 				exit 1
 			end
-		case *
+		case "*"
 			echo "Invalid option, use -h for help."
 			exit 1
 	end
