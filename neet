@@ -39,7 +39,7 @@ end
 # This function tries to fuzzy find the right directory
 function directory
 	# Check if the show already has an alias
-	if begin test (grep "^$name=" $configdir/alias); and test $realias = false; end
+	if test -n (grep "^$name=" $configdir/alias) -a $realias = false
 		set -g path (grep "^$name=" $configdir/alias | cut -d = -f 2)
 		return
 	end
@@ -143,13 +143,9 @@ if test (count $argv) -eq 1
 			echo -e "Usage: neet [options] [+/-]\n"
 			echo "options:"
 			echo "  -e,   --edit            edit list"
-			echo "  -n,   --no-resume       Disable resume playback"
-			echo "  -r,   --realias         Forgets current alias"
-			echo "  -v,   --version         print version and exit"
+			echo "  -n,   --no-resume       disable resume playback"
+			echo "  -r,   --realias         forgets current alias"
 			echo "  -h,   --help            print help and exit"
-			exit 0
-		case -v --version
-			echo "neet 0.3.4"
 			exit 0
 		case -e --edit
 			eval $EDITOR $configdir/list
@@ -179,15 +175,8 @@ if test (count $argv) -eq 1
 				sed -i "s/+ $current\/$total/+ $increment\/$total/" "$configdir/list"
 				set current $increment
 			else
-				echo -n ""(set_color $c1)"$name"(set_color fg)" completed! Would you like to remove this show? [y/N] "
-				read -p "" answer
-				switch $answer
-					case [Yy]*
-						sed -i "/^$name\$/d" $configdir/list
-						sed -i "/^+ /d" $configdir/list
-					case *
-						exit 0
-				end
+				echo "Episode $total is the last episode."
+				exit 1
 			end
 		case "-*"
 			# Fail if there is a non - character in argv
@@ -206,7 +195,7 @@ if test (count $argv) -eq 1
 				sed -i "s/+ $current\/$total/+ $decrement\/$total/" $configdir/list
 				set current $decrement
 			else
-				echo "Can't go lower than 1!"
+				echo "There isn't an episode 0."
 				exit 1
 			end
 		case "*"
