@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/fish
 #
-# onodera - onodera at openmailbox dot org
-# Give ratings
+# r8 - Give r8ings
+# onodera, https://github.com/onodera-punpun
 
 ## EXECUTE
 
 # Get random r8ing and echo it 
-rating="$((RANDOM % 9))"
+set rating (seq 8 | shuf -n 1)
 echo "gr8 m8 i r8 $rating/8"

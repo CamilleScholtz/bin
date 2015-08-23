@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/fish
 #
 # cover -  A small script to easily resize and view album art
 # onodera, https://github.com/onodera-punpun
@@ -6,85 +6,74 @@
 ## CONFIGURATION
 
 # Set music dir location
-musicdir="$HOME/media/music"
-
-# Set cover size
-size=160x160
+set musicdir $HOME/media/music
 
 # Set colors
-fg="\e[0;39m"
-c1="\e[1;33m"
+set fg normal
+set c1 yellow
+
+# Set cover size
+set size 160x160
 
 
 ## EXECUTE
 
-if [[ "$#" -ge 1 ]]; then
-	case "$1" in
-		-h|--help)
-			echo "Usage: cover [options]"
-			echo ""
+if test (count $argv) -eq 1
+	switch $argv[1]
+		case -h --help
+			echo -e "Usage: cover [options]\n"
 			echo "options:"
 			echo "  -a,   --all             resize all covers"
 			echo "  -c,   --current         resize current playing album cover"
-			echo "  -v,   --version         print version and exit"
 			echo "  -h,   --help            print help and exit"
 			exit 0
-			;;
-		-a|--all)
-			path="$(find "$musicdir" -type f -name "cover.*" | sort)"
+		# TODO
+		case -a --all
+			set path= (find $musicdir -type f -name cover.* | sort)
 
-			all="$(echo "$path" | wc -l)"
-			number=0
+			set all (echo $path | wc -l)
+			set count 0
 
 			read -p "Do you want to resize $all covers to $size? [y/N] " answer
-			case "$answer" in
-				[Yy]*)
-					IFS=$'\n'
-					for line in $path; do
-						number="$((number + 1))"
+			switch $answer
+				case [Yy]*
+					for line in $path
+						set count (math $number + 1)
 						# TODO: fix CD1/CD2 stuff
-						album="$(echo "$line" | cut -d "/" -f 7 | cut -d " " -f 3-)"
-						output="$(echo "$line" | rev | cut -d "." -f 2- | rev)"
+						set album (echo $line | cut -d / -f 7 | cut -d \  -f 3-)
+						set output (echo $line | rev | cut -d . -f 2- | rev)
 
-						echo -e "Resizing cover $number/$all, $c1$album$fg."
-						convert "$line" -filter Lanczos -thumbnail $size! "${output}_popup.png" 2> "/dev/null"
-						if [[ "$?" -ge 1 ]]; then
-							exit
-						fi
-					done
-					;;
-				*)
-					exit
-					;;
-			esac
-			;;
-		-c|--current)
-			path="$(mpc -f "%file%" | cut -d $'\n' -f 1 | rev | cut -d "/" -f 2- | rev)"
+						echo "Resizing cover $count/$all, "(set_color $c1)"$album"(set_color $fg)"."
+						convert $line -filter Lanczos -thumbnail $size! {$output}_popup.png ^ /dev/null
+						if test $status -ge 1
+							exit 1
+						end
+					end
+				case "*"
+					exit 0
+			end
+		case -c --current
+			set path (mpc -f \%file\% | cut -d \n -f 1 | rev | cut -d / -f 2- | rev)
 
-			convert "$musicdir/$path/cover."* -filter Lanczos -thumbnail $size! "$musicdir/$path/cover_popup.png" 2> "/dev/null"
+			convert $musicdir/$path/cover.* -filter Lanczos -thumbnail $size! $musicdir/$path/cover_popup.png > /dev/null
 
-			if [[ "$?" -eq 0 ]]; then
+			if test $status -eq 0
 				echo "Cover resized successfully."
 			else
 				echo "This album doesn't have a cover."
-			fi
-			;;
-		-v|--version)
-			echo "cover 0.7"
-			exit 0
-			;;
-		*)
+				exit 1
+			end
+		case "*"
 			echo "Invalid option, use -h for help."
 			exit 1
-			;;
-	esac
+	end
 else
-	path="$(mpc -f "%file%" | cut -d $'\n' -f 1 | cut -f 1-2 -d "/")"
+	set path (mpc -f \%file\% | cut -d \n -f 1 | rev | cut -d / -f 2- | rev)
 
-	img "$musicdir/$path/cover."* 2> "/dev/null"
+	feh $musicdir/$path/cover.* ^ /dev/null
 
-	if [[ "$?" -ge 1 ]]; then
+	if test $status -ge 1
 		echo "This album doesn't have a cover."
 		exit 1
-	fi
-fi
+	end
+end
