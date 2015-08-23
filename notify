@@ -1,43 +1,42 @@
-#!/bin/bash
+#!/bin/fish
 #
 # notify - Display notifications using bar
 # onodera, https://github.com/onodera-punpun
 
+# TODO: Fix fullscreen windows fucking up when a notify comes along
+
 ## CONFIGURATION
 
 # Set colors
-bg="$(grep "bg" "$HOME/.fvwm/config" | tail -c 7)"
-fg="$(grep "fg" "$HOME/.fvwm/config" | tail -c 9 | head -c -3)"
+set fg 021B21
+set bg EEEEEE
 
 # Set font
-font=-artwiz-cure-medium-r-normal--11-110-75-75-p-90-iso8859-1,-FreeType-Kochi-Medium-R-Normal--9-90-75-75-P-77-ISO10646-1,-FreeType-Baekmuk-Medium-R-Normal--9-90-75-75-P-38-ISO10646-1
+set font -artwiz-cure-medium-r-normal--11-110-75-75-p-90-iso8859-1,-freetype-kochismall-medium-r-normal--9-90-75-75-p-77-iso10646-1,-freetype-baekmuksmall-medium-r-normal--9-90-75-75-p-38-iso10646-1
 
 
 ## EXECUTE
 
-if [[ "$#" -ge 1 ]]; then
-	case "$@" in
-		-h|--help)
-			echo "usage: notify [options] [message]"
+if test (count $argv) -ge 1
+	switch $argv[1]
+		case -h --help
+			echo -e "Usage: notify [options] [message]\n"
 			echo "options:"
-			echo "  -v,   --version             print version and exit"
 			echo "  -h,   --help                print help and exit"
 			exit 0
-			;;
-		-v|--version)
-			echo "notify 0.4"
-			exit 0
-			;;
-		*)
-			# Kill old notifycation
-			pkill -f -n "00$bg"
+		case "*"
+			# Kill old notification
+			pkill -f "lemonbar -g 800x56"
 
-			# Display notifcation
-			(echo "%{B#FF$bg}%{r}     $@     " ; sleep 4) |
-			lemonbar -g 800x56+1059+1090 -d -f $font -B \#00$bg -F \#FF$fg & disown
-			;;
-	esac
+			# Display notification
+			echo "%{B#$bg}%{r}     $argv     " | lemonbar -g 800x56+1088+32 -p -f $font -B \#00$bg -F \#$fg &
+
+			# Kill notification
+			sleep 4
+			set pid (jobs -p | cut -d \n -f 2)
+			kill $pid ^ /dev/null
+		end
 else
 	echo "Please specify a message."
 	exit 1
-fi
+end

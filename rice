@@ -16,8 +16,8 @@ set resize true
 set hostname (hostname)
 set distro (crux)
 set kernel (uname -r -s)
-set init busybox/minirc
-set shell (echo $SHELL)
+set init sinit/god
+set shell fish
 set packages (pkginfo -i | wc -l)
 set wm Openbox
 set font Gohufont 14
@@ -26,18 +26,34 @@ set font Gohufont 14
 ## EXECUTE
 
 # Resize terminal
-if begin test -n $DISPLAY; and test $resize = true; end
+if test -n $DISPLAY -a $resize = true
 	#wtp 0 0 200 500 "$(pfw)"
 	sleep 0.1
 end
 
-# Echo rice
-echo "                   "(set_color $c1)"$USER"(set_color $fg)"@"(set_color $c1)"$hostname"(set_color $fg)""
-echo "       /\\"
-echo "      /  \         "(set_color $c1)"Distro:"(set_color $fg)"    $distro"
-echo "     /    \        "(set_color $c1)"Kernel:"(set_color $fg)"    $kernel"
-echo "    /˚̆̈̉` ˚̆̈̉` \       "(set_color $c1)"Init/rc:"(set_color $fg)"   $init"
-echo "   /   レ   \      "(set_color $c1)"Shell:"(set_color $fg)"     $shell"
-echo "  /     つ   \     "(set_color $c1)"Packages:"(set_color $fg)"  $packages"
-echo " /            \    "(set_color $c1)"WM:"(set_color $fg)"        $wm"
-echo " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾    "(set_color $c1)"Font:"(set_color $fg)"      $font"
+# Get random number
+set ascii (seq 2 | shuf -n 1)
+
+if test $ascii -eq 1
+	echo "                   "(set_color $c1)"$USER"(set_color $fg)"@"(set_color $c1)"$hostname"(set_color $fg)""
+	echo "       /\          "
+	echo "      /  \         "(set_color $c1)"Distro:"(set_color $fg)"    $distro"
+	echo "     /    \        "(set_color $c1)"Kernel:"(set_color $fg)"    $kernel"
+	echo "    /˚̆̈̉` ˚̆̈̉` \       "(set_color $c1)"Init/rc:"(set_color $fg)"   $init"
+	echo "   /   レ   \      "(set_color $c1)"Shell:"(set_color $fg)"     $shell"
+	echo "  /     つ   \     "(set_color $c1)"Packages:"(set_color $fg)"  $packages"
+	echo " /            \    "(set_color $c1)"WM:"(set_color $fg)"        $wm"
+	echo " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾    "(set_color $c1)"Font:"(set_color $fg)"      $font"
+end
+
+if test $ascii -eq 2
+	echo "                   "(set_color $c1)"$USER"(set_color $fg)"@"(set_color $c1)"$hostname"(set_color $fg)""
+	echo "     .---､         "
+	echo "     |· ·|         "(set_color $c1)"Distro:"(set_color $fg)"    $distro"
+	echo "     | ゝ|         "(set_color $c1)"Kernel:"(set_color $fg)"    $kernel"
+	echo "    ΣIIIII         "(set_color $c1)"Init/rc:"(set_color $fg)"   $init"
+	echo "     |   |         "(set_color $c1)"Shell:"(set_color $fg)"     $shell"
+	echo "     |___|         "(set_color $c1)"Packages:"(set_color $fg)"  $packages"
+	echo "      | |          "(set_color $c1)"WM:"(set_color $fg)"        $wm"
+	echo "      └ └          "(set_color $c1)"Font:"(set_color $fg)"      $font"
+end

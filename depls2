@@ -1,0 +1,125 @@
+#!/bin/bash
+#
+# depls - List dependencies
+# onodera, https://github.com/onodera-punpun
+
+## CONFIGURATION
+
+# Config location
+config="/etc/mk.conf"
+
+
+## FUNCTIONS
+
+# This function gets some basic info
+info() {
+	order="$(grep "^order" "$config" | cut -d " " -f 2-)"
+	alias="$(grep "^alias" "$config" | cut -d " " -f 2-)"
+
+	ports="$(ports -l)"
+	installed="$(pkginfo -i | cut -d " " -f 1)"
+}
+
+# This function reads the Pkgfile
+pkgfile() {
+	if ! [[ -f "./Pkgfile" ]]; then
+		if [[ -z "$dep" ]]; then
+			echo "=======> ERROR: File 'Pkgfile' not found."
+		else
+			echo "=======> ERROR: Dependency '$dep' not found."
+		fi
+		exit 1
+	else
+		pkgfile="$(cat "./Pkgfile")"
+	fi
+}
+
+# This function calculates the dependency location
+location() {
+	deps="$(echo "$pkgfile" | grep "^# Depends on:" | sed "s/# Depends on:[ 	]*//g" | tr -d "," | tr " " "\n")"
+
+	# Alias
+	# TODO: Find a better way of doing this?
+	for line in $alias; do
+		original="$(echo "$line" | cut -d "=" -f 1)"
+		aliased="$(echo "$line" | cut -d "=" -f 2)"
+
+		deps="$(echo "$deps" | sed "s/^$original$/$aliased/g")"
+	done
+
+	# Check which dependencies are not installed yet
+	if [[ "$all" == true ]]; then
+		nolocation="$deps"
+	else
+		nolocation="$(echo -e "$(echo -e "$installed\n$deps" | sort | uniq -u)\n$deps" | sort | uniq -d)"
+	fi
+
+	# Get location of dependencies
+	for dep in $nolocation; do
+		# Check if in $checked
+		if [[ -n "$(echo "$checked" | grep " $dep ")" ]]; then
+			#spacecount=0
+			continue
+		else
+			checked="$checked $dep "
+		fi
+
+		# Get dependency location
+		location="$(echo "$ports" | grep "/$dep$")"
+
+		# Order
+		# TODO: Find a better way of doing this?
+		if [[ "$(echo "$location" | wc -l)" -ge 2 ]]; then
+			for line in $order; do
+				locationorder="$(echo "$location" | grep "^$line/")"
+				if [[ -n "$locationorder" ]]; then
+					location="$locationorder"
+					break
+			fi
+			done
+		fi
+
+		echo "$location"
+
+		# cd to $dep location and repeat pkgfile/location process
+		cd "/usr/ports/$location"
+		pkgfile
+		location
+	done
+}
+
+## EXECUTE
+
+for flag in "$@"; do
+	case "$flag" in
+		-h|--help)
+			echo "Usage: depls [options]"
+			echo ""
+			echo "options:"
+			echo "  -a,   --all             list all dependencies"
+			echo "  -v,   --version         print version and exit"
+			echo "  -h,   --help            print help and exit"
+			exit 0
+			;;
+		-a|--all)
+			all=true
+
+			info
+			pkgfile
+			location
+			exit
+			;;
+		-v|--version)
+			echo "depls (mk) 0.6.2"
+			exit 0
+			;;
+		*)
+			echo "depls: invalid option $1"
+			exit 1
+			;;
+	esac
+done
+
+info
+pkgfile
+location

@@ -5,18 +5,48 @@
 
 ## CONFIGURATION
 
-# Set wallpaper dir location
-set wallpaperdir $HOME/.wallpapers
+# Set wallshuf location
+set wallshufdir $HOME/.wallshuf
 
 # Set colors
 set fg normal
 set c1 yellow
 
+# Set start times and accepted wallpaper types (currently only one allowed)
+set morning 6 bright
+set afternoon 13 bright
+set night 22 dark
+
+
+## FUNCTIONS
+
+# This functions sets the wallpaper
+function setwall
+	if test -z (ls $wallshufdir/$argv ^ /dev/null | tr \n \ )
+		echo "No wallpaprs in "(set_color $c1)"$wallshufdir/$argv"(set_color $fg)"."
+		exit 1
+	end
+
+	set wallpaper (ls $wallshufdir/$argv | shuf -n 1)
+
+	feh --bg-center $wallshufdir/$argv/$wallpaper
+	echo "A $argv wallpaper has been set, "(set_color $c1)"$wallpaper"(set_color $fg)"."
+end
+
+
 ## EXECUTE
 
-# Get random wallpaper
-set wallpaper (ls $wallpaperdir | shuf -n 1)
+if test (count $argv) -eq 1
+	setwall $argv
+else
+	# Get time
+	set hour (clock -f \%H)
 
-# Set random wallpaper
-simple-wp-setter  $wallpaperdir/$wallpaper
-echo "Wallpaper set, "(set_color $c1)"$wallpaper"(set_color $fg)"."
+	if test $hour -ge $morning[1] -a $hour -lt $afternoon[1]
+		setwall $morning[2]
+	else if test $hour -ge $afternoon[1] -a $hour -lt $night[1]
+		setwall $afternoon[2]
+	else
+		setwall $night[2]
+	end
+end
