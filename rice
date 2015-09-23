@@ -19,7 +19,8 @@ set kernel (uname -r -s)
 set init sinit/god
 set shell fish
 set packages (pkginfo -i | wc -l)
-set wm Openbox
+#set wm Openbox
+set wm SponeWM
 set font Gohufont 14
 
 

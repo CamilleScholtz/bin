@@ -13,7 +13,7 @@ set fg normal
 set c1 yellow
 
 # Set cover size
-set size 160x160
+set size 140x140
 
 
 ## EXECUTE
@@ -27,24 +27,23 @@ if test (count $argv) -eq 1
 			echo "  -c,   --current         resize current playing album cover"
 			echo "  -h,   --help            print help and exit"
 			exit 0
-		# TODO
 		case -a --all
-			set path= (find $musicdir -type f -name cover.* | sort)
+			set path (find $musicdir -type f -name cover.\* | sort)
 
-			set all (echo $path | wc -l)
-			set count 0
+			set all (count $path)
+			set current 0
 
-			read -p "Do you want to resize $all covers to $size? [y/N] " answer
+			# TODO: Fix blank line after read
+			read -n 1 -p 'echo "Do you want to resize $all covers to $size? [y/N] "' answer
 			switch $answer
-				case [Yy]*
+				case Y y
 					for line in $path
-						set count (math $number + 1)
-						# TODO: fix CD1/CD2 stuff
+						set current (math $current + 1)
 						set album (echo $line | cut -d / -f 7 | cut -d \  -f 3-)
-						set output (echo $line | rev | cut -d . -f 2- | rev)
+						set basename (echo $line | rev | cut -d . -f 2- | rev)
 
-						echo "Resizing cover $count/$all, "(set_color $c1)"$album"(set_color $fg)"."
-						convert $line -filter Lanczos -thumbnail $size! {$output}_popup.png ^ /dev/null
+						echo "Resizing cover $current/$all, "(set_color $c1)"$album"(set_color $fg)"."
+						convert $line -filter Lanczos -thumbnail $size! "$basename"_popup.png ^ /dev/null
 						if test $status -ge 1
 							exit 1
 						end
@@ -70,7 +69,7 @@ if test (count $argv) -eq 1
 else
 	set path (mpc -f \%file\% | cut -d \n -f 1 | rev | cut -d / -f 2- | rev)
 
-	feh $musicdir/$path/cover.* ^ /dev/null
+	pqiv $musicdir/$path/cover.* ^ /dev/null
 
 	if test $status -ge 1
 		echo "This album doesn't have a cover."

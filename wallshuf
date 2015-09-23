@@ -15,7 +15,7 @@ set c1 yellow
 # Set start times and accepted wallpaper types (currently only one allowed)
 set morning 6 bright
 set afternoon 13 bright
-set night 22 dark
+set night 21 dark
 
 
 ## FUNCTIONS

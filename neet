@@ -39,7 +39,7 @@ end
 # This function tries to fuzzy find the right directory
 function directory
 	# Check if the show already has an alias
-	if test (grep "^$name=" $configdir/alias) -a $realias = false
+	if test -n (grep "^$name=" $configdir/alias) -a $realias = false
 		set -g path (grep "^$name=" $configdir/alias | cut -d = -f 2)
 		return
 	end

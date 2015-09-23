@@ -1,0 +1,40 @@
+#!/bin/fish
+#
+# neet - Create graph with raininfo
+# onodera, https://github.com/onodera-punpun
+
+## FUNCTIONS
+
+# This function creates the graph
+function graph
+	gnuplot -e "set terminal png transparent size 195,135;\
+				set yrange [0:255];\
+				set noborder;\
+				set nolabel;\
+				set nokey;\
+				set notics;\
+				set notitle;\
+				set style fill solid border rgb '#CA6F54';\
+				plot '$rainfile' smooth csplines with filledcurve x1 lc rgb '#F2A18C'"
+end
+
+
+## EXECUTE
+
+# Download weather info
+set rainfile /tmp/rain.txt
+wget -q -O- "http://gps.buienradar.nl/getrr.php?lat=52.0646&lon=5.2065" | sed "s/|.*//g" > $rainfile
+
+if test (count $argv) -ge 1
+	switch $argv[1]
+		case -h --help
+			echo -e "Usage: raingraph [location]\n"
+			echo "options:"
+			echo "  -h,   --help            print help and exit"
+			exit 0
+		case "*"
+			graph > $argv
+	end
+else
+	graph > raingraph.png
+end
