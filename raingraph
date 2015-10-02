@@ -1,6 +1,6 @@
 #!/bin/fish
 #
-# neet - Create graph with raininfo
+# raingraph - Create graph with raininfo
 # onodera, https://github.com/onodera-punpun
 
 ## FUNCTIONS

@@ -1,0 +1,28 @@
+#!/bin/fish
+#
+# define - Define a word
+# onodera, https://github.com/onodera-punpun
+
+## EXECUTE
+
+if test (count $argv) -ge 1
+	switch $argv[1]
+		case -h --help
+			echo -e "Usage: define [word]\n"
+			echo "options:"
+			echo "  -h,   --help            print help and exit"
+			exit 0
+		case "*"
+			set result (wget -q -O- https://en.wiktionary.org/wiki/$argv | sed -n '/<span class="mw-headline" id="English">/,/<hr \/>/p')
+			set noun (echo $result | sed -n '/<span class="mw-headline" id="Noun">/,/<span class="mw-headline"/p')
+				echo $noun | sed -e "s/<[^>]*>//g"
+				#		echo $result
+				#	else
+				#		echo "No definition found."
+				#		exit 1
+				#	end
+	end
+else
+	echo "Please enter a word to define."
+	exit 1
+end

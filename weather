@@ -1,6 +1,6 @@
 #!/bin/fish
 #
-# neet - Get weather info
+# weather - Get weather info
 # onodera, https://github.com/onodera-punpun
 
 ## EXECUTE
@@ -13,17 +13,23 @@ wget -q "http://xml.buienradar.nl/" -O $weatherfile
 set temp (xmllint --format $weatherfile | grep -A 14 "\"Utrecht\"" | grep "temperatuurGC" | grep -o "[0-9.]")
 set type (xmllint --format $weatherfile | grep -A 14 "\"Utrecht\"" | grep "icoonactueel" | grep -o "zin=\".*\" " | cut -c 5- | rev | cut -c 2- | rev)
 
-# Echo weather info
 if test (count $argv) -ge 1
 	switch $argv[1]
 		case -h --help
 			echo -e "Usage: weather [options]\n"
 			echo "options:"
-			echo "  -m,   --minimal         print minimal weather info"
+			echo "  -c,   --celsius         print temperature only"
+			echo "  -t,   --type            print weather typer only"
 			echo "  -h,   --help            print help and exit"
 			exit 0
-		case -m --minimal
-			echo -e (echo $temp | tr -d \ )°C, (echo $type | tr -d \")
+		case -c --celsius
+			echo (echo $temp | tr -d \ )°C
+		case -t --type
+			echo $type | tr -d \"
+		case -ct
+			echo (echo $temp | tr -d \ )°C, (echo $type | tr -d \")
+		case "*"
+			echo "Invalid option, use -h for help."
 	end
 else
 	echo -e "It's "(set_color yellow)(echo $temp | tr -d \ )(set_color normal)" degrees and the weather type is "(set_color yellow)(echo $type | tr -d \")(set_color normal)"."

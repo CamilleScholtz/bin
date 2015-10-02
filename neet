@@ -14,7 +14,7 @@ set fg normal
 set c1 yellow
 
 # Pause mpd on play (requires mpc)
-set pausempd true
+set pausempd false
 
 # mpv launch options
 set options --fullscreen
