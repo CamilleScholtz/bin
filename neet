@@ -14,7 +14,7 @@ set fg normal
 set c1 yellow
 
 # Pause mpd on play (requires mpc)
-set pausempd false
+set pausempd true
 
 # mpv launch options
 set options --fullscreen
@@ -39,6 +39,7 @@ end
 # This function tries to fuzzy find the right directory
 function directory
 	# Check if the show already has an alias
+	# TODO: Fix error
 	if test -n (grep "^$name=" $configdir/alias) -a $realias = false
 		set -g path (grep "^$name=" $configdir/alias | cut -d = -f 2)
 		return

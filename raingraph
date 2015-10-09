@@ -14,8 +14,8 @@ function graph
 				set nokey;\
 				set notics;\
 				set notitle;\
-				set style fill solid border rgb '#CA6F54';\
-				plot '$rainfile' smooth csplines with filledcurve x1 lc rgb '#F2A18C'"
+				set style fill solid border rgb '#BC846F';\
+				plot '$rainfile' smooth csplines with filledcurve x1 lc rgb '#E5AB96'"
 end
 
 
