@@ -1,0 +1,86 @@
+#!/bin/fish
+#
+# neet - Send mpd listens to ListenBrainz.
+# onodera, https://github.com/onodera-punpun
+
+## CONFIGURATION
+
+# Your ListenBrainz key
+set key (cat $HOME/.listenbrainz)
+
+
+## FUNCTIONS
+
+# This function echoes listen info
+function echolisten
+	if test $argv = single
+		echo '
+			{
+				"listen_type": "single",
+				"payload": [
+					{
+						"listened_at": '(date +%s)',
+						"track_metadata": {
+							"artist_name": "'$oldinfo[1]'",
+							"track_name": "'$oldinfo[4]'",
+							"release_name": "'$oldinfo[2]'",
+							"additional_info": {
+								"tracknumber": "'$oldinfo[3]'"
+							}
+						}
+					}
+				]
+			}
+		'
+	else
+		echo '
+			{
+				"listen_type": "now_playing",
+				"payload": [
+					{
+						"listened_at": '(date +%s)',
+						"track_metadata": {
+							"artist_name": "'$info[1]'",
+							"track_name": "'$info[4]'",
+							"release_name": "'$info[2]'",
+							"additional_info": {
+								"tracknumber": "'$info[3]'"
+							}
+						}
+					}
+				]
+			}
+		'
+	end
+end
+
+
+## EXECUTE
+
+set oldinfo (mpc -f "%artist%\n%album%\n%track%\n%title%")
+
+while true
+	set info (mpc -f "%artist%\n%album%\n%track%\n%title%")
+
+	# Send "just listened to" info
+	if test "$info[1..4]" != "$oldinfo[1..4]"
+		set elapsed (echo $oldinfo[5] | grep -o "[0-9]*:[0-9]*" | head -n 1 | tr : \n)
+		set seconds (math $elapsed[1] \* 60 + $elapsed[2])
+		set percent (echo $oldinfo[5] | grep -o "[0-9]*%" | head -n 1 | tr -d \%)
+
+		if test $seconds -ge 240 -o $percent -ge 55
+			echolisten single > /tmp/listen
+			curl -H "Content-Type: application/json" -H "Authorization: Token $key" -X POST -d "@/tmp/listen" https://api.listenbrainz.org/1/submit-listens
+		end
+	end
+
+	# Send "listening to" info
+	# TODO: Comment this out one now_playing actually works
+	#echolisten now_playing > /tmp/listen
+	#curl -H "Content-Type: application/json" -H "Authorization: Token $key" -X POST -d "@/tmp/listen" https://api.listenbrainz.org/1/submit-listens
+
+
+	set oldinfo $info
+
+	sleep 5
+end
