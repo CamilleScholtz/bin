@@ -75,10 +75,8 @@ while true
 	end
 
 	# Send "listening to" info
-	# TODO: Comment this out one now_playing actually works
 	#echolisten now_playing > /tmp/listen
-	#curl -H "Content-Type: application/json" -H "Authorization: Token $key" -X POST -d "@/tmp/listen" https://api.listenbrainz.org/1/submit-listens
-
+	#	curl -H "Content-Type: application/json" -H "Authorization: Token $key" -X POST -d "@/tmp/listen" https://api.listenbrainz.org/1/submit-listens
 
 	set oldinfo $info
 

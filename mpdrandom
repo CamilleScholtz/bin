@@ -1,0 +1,13 @@
+#!/bin/fish
+#
+# mpdrandom - Toggle mpd random and siplay notification
+# onodera, https://github.com/onodera-punpun
+
+mpc -q random
+
+set random (mpc | grep -o "random: [a-z]*" | cut -d \  -f 2)
+if test $random = on
+	notify "mpd random mode is now on" &
+else
+	notify "mpd random mode is now off" &
+end

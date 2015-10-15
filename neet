@@ -40,7 +40,7 @@ end
 function directory
 	# Check if the show already has an alias
 	# TODO: Fix error
-	if test -n (grep "^$name=" $configdir/alias) -a $realias = false
+	if test -n "(grep "^$name=" $configdir/alias)" -a $realias = false
 		set -g path (grep "^$name=" $configdir/alias | cut -d = -f 2)
 		return
 	end

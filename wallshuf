@@ -23,7 +23,7 @@ set night 21 dark
 # This functions sets the wallpaper
 function setwall
 	if test -z (ls $wallshufdir/$argv ^ /dev/null | tr \n \ )
-		echo "No wallpaprs in "(set_color $c1)"$wallshufdir/$argv"(set_color $fg)"."
+		echo "No wallpapers in "(set_color $c1)"$wallshufdir/$argv"(set_color $fg)"."
 		exit 1
 	end
 

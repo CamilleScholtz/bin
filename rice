@@ -37,13 +37,13 @@ set ascii (seq 2 | shuf -n 1)
 if test $ascii -eq 1
 	echo "                   "(set_color $c1)"$USER"(set_color $fg)"@"(set_color $c1)"$hostname"(set_color $fg)""
 	echo "       /\          "
-	echo "      /  \         "(set_color $c1)"Distro:"(set_color $fg)"    $distro"
-	echo "     /    \        "(set_color $c1)"Kernel:"(set_color $fg)"    $kernel"
-	echo "    /˚̆̈̉` ˚̆̈̉` \       "(set_color $c1)"Init/rc:"(set_color $fg)"   $init"
-	echo "   /   レ   \      "(set_color $c1)"Shell:"(set_color $fg)"     $shell"
-	echo "  /     つ   \     "(set_color $c1)"Packages:"(set_color $fg)"  $packages"
-	echo " /            \    "(set_color $c1)"WM:"(set_color $fg)"        $wm"
-	echo " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾    "(set_color $c1)"Font:"(set_color $fg)"      $font"
+	echo "      /  \         "(set_color $c1)"Distro"(set_color $fg)"    $distro"
+	echo "     /    \        "(set_color $c1)"Kernel"(set_color $fg)"    $kernel"
+	echo "    /˚̆̈̉` ˚̆̈̉` \       "(set_color $c1)"Init/rc"(set_color $fg)"   $init"
+	echo "   /   レ   \      "(set_color $c1)"Shell"(set_color $fg)"     $shell"
+	echo "  /     つ   \     "(set_color $c1)"Packages"(set_color $fg)"  $packages"
+	echo " /            \    "(set_color $c1)"WM"(set_color $fg)"        $wm"
+	echo " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾    "(set_color $c1)"Font"(set_color $fg)"      $font"
 end
 
 if test $ascii -eq 2
