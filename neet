@@ -39,8 +39,7 @@ end
 # This function tries to fuzzy find the right directory
 function directory
 	# Check if the show already has an alias
-	# TODO: Fix error
-	if test -n "(grep "^$name=" $configdir/alias)" -a $realias = false
+	if test -n (grep "^$name=" $configdir/alias) -a $realias = false ^ /dev/null
 		set -g path (grep "^$name=" $configdir/alias | cut -d = -f 2)
 		return
 	end
@@ -49,7 +48,6 @@ function directory
 	set directories (ls -d $mediadir/* | rev | cut -d / -f -2 | rev)
 	
 	# This is the actual fuzzy logic part, it compares the directory names with the active show name
-	# TODO: Make this only grep whole words
 	set matches (
 		for directory in $directories
 			for word in (echo $name | tr \  \n)
@@ -69,7 +67,7 @@ function directory
 	# Create alias
 	if test $count -eq 1
 		echo "Show initialized. (alias set)"
-		echo $name=$path > "$configdir/alias"
+		echo $name=$path > $configdir/alias
 	else if test $count -ge 2
 		echo -e "There are $count directories that match "(set_color $c1)"$name"(set_color $fg)":\n"
 		echo -e "(echo $path | uniq | nl | sed s/\i/\ /g)\n"
@@ -95,7 +93,8 @@ function episode
 	set IFS
 
 	# Lists all video files in the directory
-	set episodes (find $mediadir/$path -type f -regex ".*\.\(avi\|mkv\|mp4\)" | rev | cut -d / -f -1 | rev)
+	# TODO: simplify regex
+	set episodes (find $mediadir/$path -type f -regex ".*\.\(avi\|mkv\|mp4\|avi.part\|mkv.part\|mp4.part\)" | rev | cut -d / -f -1 | rev)
 
 	# Calculates the zeros in a file name (for example two in 002 and one in 089)
 	set zerocount (math (echo $total | wc -c) - (echo $current | wc -c))
@@ -104,18 +103,24 @@ function episode
 	end
 	
 	# Greps the right file (hopefully)
-	# Currently supports "E01", "ep01" & " 01"
-	set -g file (echo $episodes | grep "E$zero$current"[^0-9])
+	# E01
+	set -g file (echo $episodes | grep -i "E$zero$current"[^0-9])
+	# ep01
 	if test $status -ge 1
-		set -g file (echo $episodes | grep "ep$zero$current"[^0-9])
+		set -g file (echo $episodes | grep -i "ep$zero$current"[^0-9])
+		# 01
 		if test $status -ge 1
-			set -g file (echo $episodes | grep "$zero$current"[^0-9])
+			set -g file (echo $episodes | grep -i " $zero$current"[^0-9])
+			# Last resort (just the ep number
+			if test $status -ge 1
+				set -g file (echo $episodes | grep -i "$current"[^0-9])
+			end
 		end
-	end
+	end	
 
-	# Throw error if nothing is found
+	# Throw error if no file is found
 	if test -z $file
-		echo "No "(set_color $c1)"episode"(set_color $fg)" match found."
+ 		echo "No "(set_color $c1)"episode"(set_color $fg)" match found."
 		exit 1
 	end
 end
@@ -123,6 +128,10 @@ end
 # This function pauses mpd, and starts mpv
 function play
 	echo "Playing episode $current/$total, "(set_color $c1)"$name"(set_color $fg)"."
+	if test (echo $file | grep ".part\$")
+		echo "This episode has not finished downloading yet."
+		echo "Playback might be buggy or not work at all!"
+	end		
 
 	# Pause mpd
 	if test $pausempd = true
@@ -141,7 +150,7 @@ set realias false
 if test (count $argv) -eq 1
 	switch $argv[1]
 		case -h --help
-			echo -e "Usage: neet [options] [+/-]\n"
+			echo -e "Usage: neet [options] [-/+]\n"
 			echo "options:"
 			echo "  -e,   --edit            edit list"
 			echo "  -n,   --no-resume       disable resume playback"
