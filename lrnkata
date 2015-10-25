@@ -1,11 +1,12 @@
 #!/bin/fish
 #
-# lrnhiri - Learn hirigana in the terminal.
+# lrnkata - Learn katakana in the terminal.
 # onodera, https://github.com/onodera-punpun
 
 ## CONFIGURATION
 
-set learn hiri hiri_k hiri_s hiri_t
+# The katagana you want to learn, check DEFINE below for var names
+set learn kata kata_k kata_s kata_t
 
 
 ## DEFINE
@@ -13,58 +14,58 @@ set learn hiri hiri_k hiri_s hiri_t
 set yay "Yay" "Well done" "Keep it up" "Very good" "Kabam" "Killing it" "Not bad" "Nice going" "Good job" "Perfect" "Amazing" "Wowzers" "You CAN even" "C-C-C-COMBO BREAKER" "That's the spirit" "Excellent" "Niiiiice" "Noice" "Yatta" "Sugoi"
 set nay "Nay"  "Wrong again" "WROOOONG" "That's SO wrong" "FUCK YOU" "You can do better" "Please" "You disgust me" "Kill yourself" "You suck" "Failure" "Just keep trying" "You're a dissapointment" "You should have been swallowed" "Zipperhead" "What the fuck man"
 
-set hiri あ い う え お ん
+set kata ア イ ウ エ オ ン
 set roma a i u e o n
 
-set hiri_k か き く け こ
+set kata_k カ キ ク ケ コ
 set roma_k ka ki ku ke ko
 
-set hiri_s さ し す せ そ
+set kata_s サシ ス セ ソ
 set roma_s sa shi su se so
 
-set hiri_t た ち つ て と
+set kata_t タ チ ツ テ ト
 set roma_t ta chi tsu te to
 
-set hiri_n な に ぬ ね の
+set kata_n ナ ニ ヌ ネ ノ
 set roma_n na ni nu ne no
 
-set hiri_h は ひ ふ へ ほ
+set kata_h ハ ヒ フ ヘ ホ
 set roma_h ha hi fu he ho
 
-set hiri_m ま み む め も
+set kata_m マ ミ ム メ モ
 set roma_m ma mi mu me mo
 
-set hiri_y や ゆ よ
+set kata_y ヤ ユ ヨ
 set roma_y ya yu yo
 
-set hiri_r ら り る れ ろ
+set kata_r ラ リ ル レ ロ
 set roma_r ra ri ru re ro
 
-set hiri_w わ を
+set kata_w ワ ヲ
 set roma_w wa o
 
-set hiri_g が ぎ ぐ げ ご
+set kata_g ガ ギ グ ゲ ゴ
 set roma_g ga gi gu ge go
 
-set hiri_z ざ じ ず ぜ ぞ
+set kata_z ザ ジ ズ ゼ ゾ
 set roma_z za ji zu ze zo
 
-set hiri_d だ ぢ づ で ど
+set kata_d ダ ヂ ヅ デ ド
 set roma_d da ji zu de do
 
-set hiri_b ば び ぶ べ ぼ
+set kata_b バ ビ ブ ベ ボ
 set roma_b ba bi bu be bo
 
-set hiri_p ぱ ぴ ぷ ぺ ぽ
+set kata_p パ ピ プ ペ ポ
 set roma_p pa pi pu pe po
 
 
 ## FUNCTIONS
 
-# This function gets a random hiri/roma
+# This function gets a random kata/roma
 function random
 	set random (seq (count $$learn) | shuf -n 1)
-	set learnroma (echo $learn | sed "s/hiri/roma/g" | tr \  \n)
+	set learnroma (echo $learn | sed "s/kata/roma/g" | tr \  \n)
 
 	set -g question (echo $$learn | cut -d \  -f $random)
 	set -g answer (echo $$learnroma | cut -d \  -f $random)

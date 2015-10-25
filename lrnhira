@@ -1,0 +1,93 @@
+#!/bin/fish
+#
+# lrnhira - Learn hiragana in the terminal.
+# onodera, https://github.com/onodera-punpun
+
+## CONFIGURATION
+
+# The hiragana you want to learn, check DEFINE below for var names
+set learn hira hira_k hira_s hira_t
+
+
+## DEFINE
+
+set yay "Yay" "Well done" "Keep it up" "Very good" "Kabam" "Killing it" "Not bad" "Nice going" "Good job" "Perfect" "Amazing" "Wowzers" "You CAN even" "C-C-C-COMBO BREAKER" "That's the spirit" "Excellent" "Niiiiice" "Noice" "Yatta" "Sugoi"
+set nay "Nay"  "Wrong again" "WROOOONG" "That's SO wrong" "FUCK YOU" "You can do better" "Please" "You disgust me" "Kill yourself" "You suck" "Failure" "Just keep trying" "You're a dissapointment" "You should have been swallowed" "Zipperhead" "What the fuck man"
+
+set hira あ い う え お ん
+set roma a i u e o n
+
+set hira_k か き く け こ
+set roma_k ka ki ku ke ko
+
+set hira_s さ し す せ そ
+set roma_s sa shi su se so
+
+set hira_t た ち つ て と
+set roma_t ta chi tsu te to
+
+set hira_n な に ぬ ね の
+set roma_n na ni nu ne no
+
+set hira_h は ひ ふ へ ほ
+set roma_h ha hi fu he ho
+
+set hira_m ま み む め も
+set roma_m ma mi mu me mo
+
+set hira_y や ゆ よ
+set roma_y ya yu yo
+
+set hira_r ら り る れ ろ
+set roma_r ra ri ru re ro
+
+set hira_w わ を
+set roma_w wa o
+
+set hira_g が ぎ ぐ げ ご
+set roma_g ga gi gu ge go
+
+set hira_z ざ じ ず ぜ ぞ
+set roma_z za ji zu ze zo
+
+set hira_d だ ぢ づ で ど
+set roma_d da ji zu de do
+
+set hira_b ば び ぶ べ ぼ
+set roma_b ba bi bu be bo
+
+set hira_p ぱ ぴ ぷ ぺ ぽ
+set roma_p pa pi pu pe po
+
+
+## FUNCTIONS
+
+# This function gets a random hira/roma
+function random
+	set random (seq (count $$learn) | shuf -n 1)
+	set learnroma (echo $learn | sed "s/hira/roma/g" | tr \  \n)
+
+	set -g question (echo $$learn | cut -d \  -f $random)
+	set -g answer (echo $$learnroma | cut -d \  -f $random)
+end
+
+
+## EXECUTE
+
+set correct 0
+set incorrect 0
+
+while true
+	random
+
+	read -p 'echo "What is the romaji equivalent of "(set_color yellow)"$question"(set_color normal)"? "' input
+	clear
+
+	if test $input = $answer
+		set correct (math $correct + 1)
+		echo -e (echo $yay[(seq (count $yay) | shuf -n 1)])"! ("(set_color green)"$correct"(set_color normal)" correct, "(set_color red)"$incorrect"(set_color normal)" incorrect)\n"
+	else
+		set incorrect (math $incorrect + 1)
+		echo -e (echo $nay[(seq (count $nay) | shuf -n 1)])"! The correct answer is "(set_color yellow)"$answer"(set_color normal)"! ("(set_color green)"$correct"(set_color normal)" correct, "(set_color red)"$incorrect"(set_color normal)" incorrect)\n"
+	end
+end
