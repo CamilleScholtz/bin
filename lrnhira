@@ -6,7 +6,8 @@
 ## CONFIGURATION
 
 # The hiragana you want to learn, check DEFINE below for var names
-set learn hira hira_k hira_s hira_t
+# Enter var's twice or more to make them more common
+set learn hira hira_k hira_s hira_t hira_n hira_h
 
 
 ## DEFINE
@@ -60,25 +61,17 @@ set hira_p ぱ ぴ ぷ ぺ ぽ
 set roma_p pa pi pu pe po
 
 
-## FUNCTIONS
-
-# This function gets a random hira/roma
-function random
-	set random (seq (count $$learn) | shuf -n 1)
-	set learnroma (echo $learn | sed "s/hira/roma/g" | tr \  \n)
-
-	set -g question (echo $$learn | cut -d \  -f $random)
-	set -g answer (echo $$learnroma | cut -d \  -f $random)
-end
-
-
 ## EXECUTE
 
 set correct 0
 set incorrect 0
 
 while true
-	random
+	set random (seq (count $$learn) | shuf -n 1)
+	set learnroma (echo $learn | sed "s/hira/roma/g" | tr \  \n)
+
+	set -g question (echo $$learn | cut -d \  -f $random)
+	set -g answer (echo $$learnroma | cut -d \  -f $random)
 
 	read -p 'echo "What is the romaji equivalent of "(set_color yellow)"$question"(set_color normal)"? "' input
 	clear
