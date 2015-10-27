@@ -60,11 +60,24 @@ set roma_b ba bi bu be bo
 set kata_p パ ピ プ ペ ポ
 set roma_p pa pi pu pe po
 
+## FUNCTIONS
+
+# This function gets a random katakana and it's answer
+function randomkata
+	set random (seq (count $$learn) | shuf -n 1)
+	set learnroma (echo $learn | sed "s/kata/roma/g" | tr \  \n)
+
+	set -g question (echo $$learn | cut -d \  -f $random)
+	set -g answer (echo $$learnroma | cut -d \  -f $random)
+end
+
 
 ## EXECUTE
 
 set correct 0
 set incorrect 0
+
+randomkata
 
 while true
 	set random (seq (count $$learn) | shuf -n 1)
@@ -79,8 +92,10 @@ while true
 	if test $input = $answer
 		set correct (math $correct + 1)
 		echo -e (echo $yay[(seq (count $yay) | shuf -n 1)])"! ("(set_color green)"$correct"(set_color normal)" correct, "(set_color red)"$incorrect"(set_color normal)" incorrect)\n"
+		randomkata
 	else
 		set incorrect (math $incorrect + 1)
 		echo -e (echo $nay[(seq (count $nay) | shuf -n 1)])"! The correct answer is "(set_color yellow)"$answer"(set_color normal)"! ("(set_color green)"$correct"(set_color normal)" correct, "(set_color red)"$incorrect"(set_color normal)" incorrect)\n"
+		sleep 1
 	end
 end
