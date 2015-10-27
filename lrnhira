@@ -77,6 +77,7 @@ end
 
 set correct 0
 set incorrect 0
+set repeat false
 
 randomhira
 
@@ -85,12 +86,20 @@ while true
 	clear
 
 	if test $input = $answer
-		set correct (math $correct + 1)
+		if test $repeat = false
+			set correct (math $correct + 1)
+		end
 		echo -e (echo $yay[(seq (count $yay) | shuf -n 1)])"! ("(set_color green)"$correct"(set_color normal)" correct, "(set_color red)"$incorrect"(set_color normal)" incorrect)\n"
+
+		set repeat false
 		randomhira
 	else
-		set incorrect (math $incorrect + 1)
+		if test $repeat = false
+			set incorrect (math $incorrect + 1)
+		end
 		echo -e (echo $nay[(seq (count $nay) | shuf -n 1)])"! The correct answer is "(set_color yellow)"$answer"(set_color normal)"! ("(set_color green)"$correct"(set_color normal)" correct, "(set_color red)"$incorrect"(set_color normal)" incorrect)\n"
+
+		set repeat true
 		sleep 1
 	end
 end
