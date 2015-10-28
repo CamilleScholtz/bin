@@ -1,0 +1,10 @@
+#!/bin/fish
+#
+# neet - Display current playing music.
+# onodera, https://github.com/onodera-punpun
+
+set album (mpc -f "%album%" | head -n 1)
+set artist (mpc -f "%artist%" | head -n 1)
+set title (mpc -f "%title%" | head -n 1)
+
+echo "Currently playing "(set_color blue)"$title"(set_color normal)" by "(set_color red)"$artist"(set_color normal)" on "(set_color yellow)"$album"(set_color normal)"."

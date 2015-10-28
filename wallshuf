@@ -1,7 +1,7 @@
 #!/bin/fish
 #
-# onodera - onodera at openmailbox dot org
-# Chooses a random wallpaper from ~/.wallpapers
+# wallshuf - Set random wallpapers.
+# # onodera, https://github.com/onodera-punpun
 
 ## CONFIGURATION
 
@@ -29,7 +29,7 @@ function setwall
 
 	set wallpaper (ls $wallshufdir/$argv | shuf -n 1)
 
-	feh --bg-center $wallshufdir/$argv/$wallpaper
+	feh --bg-center $wallshufdir/$argv/$wallpaper ^ /dev/null
 	echo "A $argv wallpaper has been set, "(set_color $c1)"$wallpaper"(set_color $fg)"."
 end
 

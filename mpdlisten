@@ -1,6 +1,6 @@
 #!/bin/fish
 #
-# neet - Send mpd listens to ListenBrainz.
+# mpdlisten - Send mpd listens to ListenBrainz.
 # onodera, https://github.com/onodera-punpun
 
 ## CONFIGURATION

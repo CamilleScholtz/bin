@@ -99,13 +99,13 @@ function episode
 
 	# Greps the right file (hopefully)
 	# E01
-	set -g file (echo $episodes | grep -i "E[0]$current"[^0-9])
+	set -g file (echo $episodes | grep -i "E[0]*$current"[^0-9])
 	# EP01
 	if test $status -ge 1
-		set -g file (echo $episodes | grep -i "EP[0]$current"[^0-9])
+		set -g file (echo $episodes | grep -i "EP[0]*$current"[^0-9])
 		# 01
 		if test $status -ge 1
-			set -g file (echo $episodes | grep -i " [0]$current"[^0-9])
+			set -g file (echo $episodes | grep -i " [0]*$current"[^0-9])
 			# Last resort (just the ep number
 			if test $status -ge 1
 				set -g file (echo $episodes | grep -i "$current"[^0-9])
