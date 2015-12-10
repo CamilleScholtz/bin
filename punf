@@ -56,7 +56,7 @@ function file
 	set -g word file
 end
 
-# This function sets $file to a selection stdin
+# This function sets $file to stdin
 function stdin
 	set -g uploadme /tmp/stdin.txt
 
@@ -123,6 +123,7 @@ function feedback
 		echo "Punfed $word: $url"
 	end
 end
+
 
 ## EXECUTE
 
