@@ -29,7 +29,7 @@ function setwall
 
 	set wallpaper (ls $wallshufdir/$argv | shuf -n 1)
 
-	feh --bg-center $wallshufdir/$argv/$wallpaper ^ /dev/null
+	setroot -c $wallshufdir/$argv/$wallpaper
 	echo "A $argv wallpaper has been set, "(set_color $c1)"$wallpaper"(set_color $fg)"."
 end
 

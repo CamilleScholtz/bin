@@ -7,7 +7,7 @@
 
 # This function creates the graph
 function graph
-	gnuplot -e "set terminal png transparent size 195,135;\
+	gnuplot -e "set terminal png transparent size 211,135;\
 				set yrange [0:255];\
 				set noborder;\
 				set nolabel;\

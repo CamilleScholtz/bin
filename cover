@@ -9,7 +9,7 @@
 set musicdir $HOME/media/music
 
 # Set cover size
-set size 140x140
+set size 160x160
 
 
 ## EXECUTE
@@ -65,7 +65,7 @@ if test (count $argv) -eq 1
 else
 	set path (mpc -f \%file\% | cut -d \n -f 1 | rev | cut -d / -f 2- | rev)
 
-	pqiv $musicdir/$path/cover.* ^ /dev/null
+	pqiv $musicdir/$path/cover.*
 
 	if test $status -ge 1
 		echo "This album doesn't have a cover."
