@@ -1,0 +1,9 @@
+#!/bin/fish
+#
+# tomorrow - A script to get tomorows day.
+# onodera, https://github.com/onodera-punpun
+
+## EXECUTE
+
+set day (date --date="tomorrow" +"%A")
+echo "Tomorrow is a "(set_color yellow)"$day"(set_color normal)"."

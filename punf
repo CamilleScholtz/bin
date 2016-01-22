@@ -1,9 +1,12 @@
 #!/bin/fish
 #
-# punf - Upload files/scrots/urls to sr.ht (rip pomf & uguu)
+# punf - Upload files/scrots/urls to sr.ht or punpun.xyz (rip pomf & uguu)
 # onodera, https://github.com/onodera-punpun
 
 ## CONFIGURATION
+
+# Choose host (sr.ht or punpun.xyz)
+set host punpun.xyz
 
 # Your sr.ht key
 set key (cat $HOME/.srht)
@@ -37,6 +40,11 @@ end
 
 # This function sets $file to a full screen scrot
 function desktop
+	if test -z $DISPLAY
+		echo "You are not using X right now, can't make screenshot."
+		exit 1
+	end
+
 	set -g uploadme /tmp/scrot.png
 
 	maim --hidecursor $uploadme
@@ -67,6 +75,11 @@ end
 
 # This function sets $file to a selection scrot
 function selection
+	if test -z $DISPLAY
+		echo "You are not using X right now, can't make screenshot."
+		exit 1
+	end
+
 	set -g uploadme /tmp/scrot.png
 
 	maim --hidecursor -s -b 3 -c 250,250,250 $uploadme ^ /dev/null
@@ -90,7 +103,21 @@ end
 
 # This function uploads the $file
 function upload
-	set -g url (curl --silent -F key=$key -F file="@$uploadme" https://sr.ht/api/upload | grep -o -i "https://sr.ht/[a-z0-9._-]*")
+	switch $host
+		case sr.ht
+			set -g url (curl --silent -F key=$key -F file="@$uploadme" https://sr.ht/api/upload | grep -o -i "https://sr.ht/[a-z0-9._-]*")
+		case punpun.xyz
+			set basename (date +"%N" | md5sum | cut -c -3)
+			set extension (basename $uploadme | awk -F . '{print $NF}')
+
+			scp -q $uploadme onodera@raspun:$HOME/punpun.xyz/$basename.$extension
+			if test $status -ge 1
+				upload
+			end
+			ssh onodera@raspun chmod 0444 $HOME/punpun.xyz/$basename.$extension &
+
+			set -g url http://punpun.xyz/$basename.$extension
+	end
 end
 
 # This function logs the url,  copies the url to the clipboard, and/or opens the url in your browser
