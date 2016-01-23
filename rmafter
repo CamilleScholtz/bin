@@ -1,0 +1,40 @@
+#!/bin/fish
+#
+# rmafter - Removes a file after X minutes/hours/days.
+# onodera, https://github.com/onodera-punpun
+
+## EXECUTE
+
+if test (count $argv) -eq 1
+	switch $argv[1]
+		case -h --help
+			echo "Usage: rmafter [X minute/hour/day] [file]"
+			exit 0
+		case "*"
+			echo "Invalid option, use -h for help."
+			exit 1
+	end
+else if test (count $argv) -eq 3
+		set time (date --date="$argv[1-2]" +"%s" ^ /dev/null)
+		if test $status -ge 1
+			echo "Invalid time."
+			exit 1
+		end
+
+		set file (realpath $argv[3])
+		if not test -f $file
+			echo "File not found."
+			exit 1
+		end
+
+		if test (grep " $file\$" $HOME/.rmafter | wc -l) -ge 1
+			echo "File is already being rmaftered."
+			exit 1
+		end
+
+		echo "Removing file after "(set_color yellow)"$argv[1-2]"(set_color normal)"."
+		echo "$time $file" >> $HOME/.rmafter
+else
+	echo "Please specify a file and a time."
+	exit 1
+end

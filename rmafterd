@@ -1,0 +1,22 @@
+#!/bin/fish
+#
+# rmafterd - Removes a file after X minutes/hours/days, daemon part.
+# onodera, https://github.com/onodera-punpun
+
+## EXECUTE
+
+cat $HOME/.rmafter | \
+while read file
+	set current (date +"%s")
+
+	for line in $file
+		set time (echo $file | cut -d \  -f 1)
+		set file (echo $file | cut -d \  -f 2-)
+
+		if test $current -ge $time
+			rm $file
+		end
+	end
+
+	sleep 10m
+end
