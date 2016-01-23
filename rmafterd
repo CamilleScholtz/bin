@@ -10,13 +10,13 @@ while true
 	set current (date +"%s")
 
 	for line in $file
-		set time (echo $file | cut -d \  -f 1)
-		set file (echo $file | cut -d \  -f 2-)
+		set time (echo $line | cut -d \  -f 1)
+		set file (echo $line | cut -d \  -f 2-)
 
 		if test $current -ge $time
 			echo "Removing $file."
 			rm $file
-			echo $line
+			
 			sed -i "/$time .*/d" $HOME/.rmafter
 		end
 	end
