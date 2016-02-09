@@ -25,13 +25,10 @@ if test (count $argv) -ge 1
 			echo "  -h,   --help                print help and exit"
 			exit 0
 		case "*"
-			# Kill old notification
-			pkill -f "lemonbar -g 800x56"
+			pkill -f "lemonbar -g 900x56"
 
-			# Display notification
 			echo "%{B#$bg}%{r}     $argv     " | lemonbar -g 900x56+988+32 -d -p -f $font -B \#00$bg -F \#$fg &
 
-			# Kill notification
 			sleep 4
 			set pid (jobs -p | cut -d \n -f 2)
 			kill $pid ^ /dev/null
