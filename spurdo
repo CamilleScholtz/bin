@@ -5,108 +5,110 @@
 
 ## FUNCTIONS
 
+# This function outputs a random ebinface
 function randomebinface
 	set ebinfaces (
-		echo ":D"
-		echo ":DD"
-		echo ":DDD"
-		echo ":-D"
-		echo "XD"
-		echo "XXD"
-		echo "XDD"
-		echo "XXDD"
-		echo "xD"
-		echo "xDD"
-		echo ":dd"
+		echo ':D'
+		echo ':DD'
+		echo ':DDD'
+		echo ':-D'
+		echo 'XD'
+		echo 'XXD'
+		echo 'XDD'
+		echo 'XXDD'
+		echo 'xD'
+		echo 'xDD'
+		echo ':dd'
 	)
 
-	echo " "$ebinfaces[(seq (count $ebinfaces) | shuf -n 1)]
+	echo ' '$ebinfaces[(seq (count $ebinfaces) | shuf -n 1)]
 end
 
 # This function translates to spurdo
 function trspurdo
-	set argv (echo $argv | tr "[:upper:]" "[:lower:]")
+	set argv (echo $argv | tr '[:upper:]' '[:lower:]')
 	set replacements (
-		echo "america clapistan"
-		echo "meme maymay"
-		echo "some sum"
-		echo "epic ebin"
-		echo "kek geg"
-		echo "right rite"
+		echo 'america clapistan'
+		echo 'meme maymay'
+		echo 'some sum'
+		echo 'epic ebin'
+		echo 'kek geg'
+		echo 'right rite'
 
-		echo "ng nk"
-		echo "ic ig"
+		echo 'ng nk'
+		echo 'ic ig'
 
-		echo "ing ign"
-		echo "alk olk"
+		echo 'ing ign'
+		echo 'alk olk'
 
-		echo "ys yz"
-		echo "ws wz"
-		echo "us uz"
-		echo "ts tz"
-		echo "ss sz"
-		echo "rs rz"
-		echo "ns nz"
-		echo "ms mz"
-		echo "ls lz"
-		echo " is  iz"
-		echo "gs gz"
-		echo "fs fz"
-		echo "es es"
-		echo "ds dz"
-		echo "bs bz"
+		echo 'ys yz'
+		echo 'ws wz'
+		echo 'us uz'
+		echo 'ts tz'
+		echo 'ss sz'
+		echo 'rs rz'
+		echo 'ns nz'
+		echo 'ms mz'
+		echo 'ls lz'
+		echo ' is  iz'
+		echo 'gs gz'
+		echo 'fs fz'
+		echo 'es es'
+		echo 'ds dz'
+		echo 'bs bz'
 
-		echo "tr dr"
-		echo "ts dz"
-		echo "pr br"
-		echo "nt dn"
-		echo "mm m"
-		echo "lt ld"
-		echo "kn gn"
-		echo "cr gr"
-		echo "ck gg"
+		echo 'tr dr'
+		echo 'ts dz'
+		echo 'pr br'
+		echo 'nt dn'
+		echo 'mm m'
+		echo 'lt ld'
+		echo 'kn gn'
+		echo 'cr gr'
+		echo 'ck gg'
 
-		echo "va ba"
-		echo "up ub"
-		echo "pi bi"
-		echo "pe be"
-		echo "po bo"
-		echo "ot od"
-		echo "op ob"
-		echo "nt nd"
-		echo "ke ge"
-		echo "it id"
-		echo "iv ib"
-		echo "et ed"
-		echo "ex egz"
-		echo "ev eb"
-		echo "co go"
-		echo "ck gg"
-		echo "ca ga"
-		echo "ap ab"
-		echo "af ab"
+		echo 'va ba'
+		echo 'up ub'
+		echo 'pi bi'
+		echo 'pe be'
+		echo 'po bo'
+		echo 'ot od'
+		echo 'op ob'
+		echo 'nt nd'
+		echo 'ke ge'
+		echo 'it id'
+		echo 'iv ib'
+		echo 'et ed'
+		echo 'ex egz'
+		echo 'ev eb'
+		echo 'co go'
+		echo 'ck gg'
+		echo 'ca ga'
+		echo 'ap ab'
+		echo 'af ab'
 
-		echo "th d"
-		echo "wh w"
+		echo 'th d'
+		echo 'wh w'
 	)
 
+	# Spurdofy
 	for replacement in $replacements
-		set replacement (string split \  $replacement)
+		set replacement (string split ' ' $replacement)
 		set argv (string replace $replacement[1] $replacement[2] $argv)
 	end
 
-	for dotcomma in (string match -a -r ",|\." $argv)
+	# Replace dots and command with an ebinface
+	for dotcomma in (string match -a -r ',|\.' $argv)
 		set ebinface (randomebinface)
 		set argv (string replace $dotcomma $ebinface $argv)
 	end
 
-	echo "$argv"(randomebinface)
+	echo $argv(randomebinface)
 end
 
 
 ## EXECUTE
 
-# Todo: fix empt input
 if test (count $argv) -ge 1
 	trspurdo $argv
 else
