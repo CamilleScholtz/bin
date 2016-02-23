@@ -15,118 +15,107 @@ set pausempd true
 # mpv launch options
 set options --fullscreen
 
+# Set highlight color
+set highlight yellow
+
 
 ## FUNCTIONS
 
 # This function gets basic media info, like the active show name, episode count and total episodes
 function info
 	# Get the active show (+)
-	set active (grep -B 1 + $configdir/list)
+	set active (grep -B 1 '+' $configdir/list)
 
 	# Get the show name, current episode and total episode count
-	set -g name (echo $active[-2])
-	
+	set -g name $active[1]
+
 	if test -z $current
-		set -g current (echo $active[2] | cut -d / -f 1 | cut -c 3-)
+		set -g current (string match -r -a '[0-9]+' $active[2] | head -n 1)
 	end
-	set -g total (echo $active[2] | cut -d / -f 2)
+	set -g total (string match -r -a '[0-9]+' $active[2] | tail -n 1)
 end
 
 # This function tries to fuzzy find the right directory
 function directory
 	# Check if the show already has an alias
-	if test -n (grep "^$name=" $configdir/alias) -a $realias = false ^ /dev/null
-		set -g path (grep "^$name=" $configdir/alias | cut -d = -f 2)
+	if test -n (grep "^$name=" $configdir/alias) -a $realias = 'false' ^ /dev/null
+		set -g path (grep "^$name=" $configdir/alias | string replace -r '.*=' '')
 		return
 	end
 
 	# Lists all directories in mediadir
-	set directories (ls -d $mediadir/* | rev | cut -d / -f -2 | rev)
+	set -g directories (ls -d $mediadir/* | string replace -r '.*/' '')
 	
 	# This is the actual fuzzy logic part, it compares the directory names with the active show name
-	set matches (
+	function fuzzycompare
 		for directory in $directories
-			for word in (echo $name | tr \  \n)
-				echo $directory | grep -i $word
+			set match 0
+
+			for word in (string split ' ' $name)
+				set wordmatch (string match -r -i -a -n $word $directory | string replace -r '.* ' '')
+				if test $status -ge 1
+					continue
+				end
+				set wordmatch (string join ' + ' $wordmatch)
+
+				set match (math $match + $wordmatch)
 			end
-		end | cut -d / -f 2 | uniq -c | sort | sed s/\ \ \ \*//g
-	)
 
-	# This greps the output wiith the most matches
-	# TODO Fix highest with slices
-	set highest (echo $matches | head -c 1)
-	set -g path (echo $matches[-1] | cut -d \  -f 2-)
+			echo $match $directory
+		end
+	end
 
-	# Count results
-	set count (echo $path | wc -l)
+	# This gets the output with the most matches
+	set matches (fuzzycompare | sort -n)
+	set -g path (echo $matches[-1] | cut -d ' ' -f 2-)
 	
 	# Create alias
-	if test $count -eq 1
-		echo "Show initialized. (alias set)"
+	if test -n $path
+		echo 'Show initialized. (alias set)'
 		echo $name=$path > $configdir/alias
-	# TODO: Remove this?
-	else if test $count -ge 2
-		echo -e "There are $count directories that match "(set_color yellow)"$name"(set_color normal)":\n"
-		echo -e "(echo $path | uniq | nl | sed s/\i/\ /g)\n"
-		read -p "Which directory would you like to use? [1-$count] " answer
-		if test (seq $count | grep "^$answer\$")
-			echo -e "\nShow initialized. (alias set)\n"
-			echo $name=(echo $path | cut -d \$'\n' -f $answer) > $configdir/alias
-			set -g path (echo $path | cut -d \$'\n' -f $answer)
-		else
-			echo "$answer is not a valid answer."
-			exit 1
-		end
 	# Throw an error if there are no directory matches
 	else 
-		echo "No "(set_color yellow)"directory"(set_color normal)" match found."
+		echo 'No '(set_color $highlight)'directory'(set_color normal)' match.'
 		exit 1
 	end
 end
 
 # This function tries to get the right file name
 function episode
-	# TODO: Is this needed?
-	set IFS
-
 	# Lists all video files in the directory
-	# TODO: simplify regex
-	set episodes (find $mediadir/$path -type f -regex ".*\.\(avi\|mkv\|mp4\|avi.part\|mkv.part\|mp4.part\)" | rev | cut -d / -f -1 | rev)
+	set episodes (find $mediadir/$path -type f -regex '.*\.\(avi\|mkv\|mp4\|avi.part\|mkv.part\|mp4.part\)' | string replace -r '.*/' '')
 
-	# Calculates the zeros in a file name (for example two in 002 and one in 089)
-	#set zerocount (math (echo $total | wc -c) - (echo $current | wc -c) + 1)
-	#set zero (seq -s 0 $zerocount | tr -d [1-9])
-
-	# Greps the right file (hopefully)
+	# Sets the right file (hopefully)
+	# TODO: Simplify this
 	# E01
-	set -g file (echo $episodes | grep -i "E[0]*$current"[^0-9])
+	set -g file (string match -r -i '.*E[0]*'$current'[^0-9]?.*$' $episodes)
 	# EP01
 	if test $status -ge 1
-		set -g file (echo $episodes | grep -i "EP[0]*$current"[^0-9])
+		set -g file (string match -r -i '.*EP[0]*'$current'[^0-9]?.*$' $episodes)
 		# 01
 		if test $status -ge 1
-			set -g file (echo $episodes | grep -i " [0]*$current"[^0-9])
-			# Last resort (just the ep number
+			set -g file (string match -r -i '.* [0]*'$current'[^0-9]?.*$' $episodes)
+			# Last resort (just the episode number)
 			if test $status -ge 1
-				set -g file (echo $episodes | grep -i "$current"[^0-9])
+				set -g file (string match -r -i '.*[0]*'$current'[^0-9]?.*$' $episodes)
 			end
 		end
 	end
 
 	# Throw error if no file is found
-	if test -z $file
-		echo "No "(set_color yellow)"episode"(set_color normal)" match found."
+	if test -z "$file"
+		echo 'No '(set_color $highlight)'episode'(set_color normal)' match.'
 		exit 1
 	end
 end
 
 # This function pauses mpd, and starts mpv
 function play
-	echo "Playing episode $current/$total, "(set_color yellow)"$name"(set_color normal)"."
-	if test (echo $file | grep ".part\$")
-		echo "This episode has not finished downloading yet."
-		echo "Playback might be buggy or not work at all!"
-	end		
+	echo "Playing episode $current/$total, "(set_color $highlight)"$name"(set_color normal)"."
+	if test -n (string match -r '.part$' $file) ^ /dev/null
+		echo 'This episode has not finished downloading yet.'
+		echo 'Playback might be buggy or not work at all!'
+	end
 
 	# Pause mpd
 	if test $pausempd = true
@@ -145,12 +134,12 @@ set realias false
 if test (count $argv) -eq 1
 	switch $argv[1]
 		case -h --help
-			echo -e "Usage: neet [options] [-/+]\n"
-			echo "options:"
-			echo "  -e,   --edit            edit list"
-			echo "  -n,   --no-resume       disable resume playback"
-			echo "  -r,   --realias         forgets current alias"
-			echo "  -h,   --help            print help and exit"
+			echo -e 'Usage: neet [options] [-/+]\n'
+			echo 'options:'
+			echo '  -e,   --edit            edit list'
+			echo '  -n,   --no-resume       disable resume playback'
+			echo '  -r,   --realias         forgets current alias'
+			echo '  -h,   --help            print help and exit'
 			exit 0
 		case -e --edit
 			eval $EDITOR $configdir/list
@@ -163,18 +152,18 @@ if test (count $argv) -eq 1
 			info
 
 			set realias true
-		case "+*"
+		case '+*'
 			# Fail if there is a non + character in argv
-			if test (echo $argv[1] | sed s/+//g)
-				echo "Invalid option, use -h for help."
+			if test -n (string replace -a '+' '' $argv[1])
+				echo 'Invalid option, use -h for help.'
 				exit 1
 			end
 
 			info
 
 			# Get current episode and increment it by one
-			set amount (echo $argv[1] | wc -m)
-			set increment (math $current - 1 + $amount)
+			set amount (string length $argv[1])
+			set increment (math $current + $amount)
 
 			if test $increment -le $total
 				sed -i "s/+ $current\/$total/+ $increment\/$total/" "$configdir/list"
@@ -183,16 +172,18 @@ if test (count $argv) -eq 1
 				echo "Episode $total is the last episode."
 				exit 1
 			end
-		case "-*"
+		case '-*'
 			# Fail if there is a non - character in argv
-			if test (echo $argv[1] | sed s/-//g)
-				echo "Invalid option, use -h for help."
+			# TODO: Use string here
+			if test -n (echo $argv[1] | sed 's/-//g')
+				echo 'Invalid option, use -h for help.'
 				exit 1
 			end
 
 			info
 
 			# Get current episode and decrement it by one
+			# TODO: Use string here as well
 			set amount (echo $argv[1] | wc -m)
 			set decrement (math $current + 1 - $amount)
 
@@ -200,11 +191,11 @@ if test (count $argv) -eq 1
 				sed -i "s/+ $current\/$total/+ $decrement\/$total/" $configdir/list
 				set current $decrement
 			else
-				echo "There isn't an episode 0."
+				echo 'There is no episode 0.'
 				exit 1
 			end
-		case "*"
-			echo "Invalid option, use -h for help."
+		case '*'
+			echo 'Invalid option, use -h for help.'
 			exit 1
 	end
 else
