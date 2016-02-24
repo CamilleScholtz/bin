@@ -1,0 +1,147 @@
+#!/bin/fish
+#
+# speadread - Gotta go fast
+# onodera, https://github.com/onodera-punpun
+
+## CONFIGURATION
+
+# display word for X seconds
+set time 0.1
+
+# Set highlight color
+set highlight yellow
+
+# Set letter highlight color
+set letterhighlight red
+
+
+## FUNCTIONS
+
+# This function colors letters
+function colorletter
+	set word (string split '' $argv[2])
+	set count 1
+
+	for letter in $word
+		if test $count -eq $argv[1]
+			set count (math $count + 1)
+
+			set_color $letterhighlight
+			echo -e -n $letter
+			set_color normal
+		else
+			set count (math $count + 1)
+
+			echo -n $letter
+		end
+	end
+end
+
+# This function calculates the reading time
+function readingtime
+	set readingtime 0
+
+	for word in $argv
+		# If the word ends with `.!?,;:`, or is longer
+		if string match -r -q '[.!?,;]$' $word
+			set readingtime (math $readingtime + (math $time \* 2))
+		
+			# blank line
+			if string match -r -q '\.$' $word
+				set readingtime (math $readingtime + (math $time \* 2))
+			end
+		else
+			set readingtime (math $readingtime + $time)
+		end
+	end
+
+	echo $readingtime
+end
+
+
+## EXECUTE
+
+# Calculate center of term
+set centerw (math (tput cols) / 2)
+set centerh (math (tput lines) / 2 - 1)
+
+# Hide cursor, display again on program exit
+tput civis; and clear
+# TODO: Fix this not working on int and such
+trap 'tput cnorm; and clear' EXIT
+
+# Check if text is argv or stdin
+if not test -t 0
+	set argv (cat /dev/stdin)
+end
+
+set argv (string split ' ' $argv)
+
+# Show countdown
+for count in '3, ' '2, ' '1... '
+	echo -n $count
+	sleep 0.5
+end
+echo -e -n 'reading '(set_color $highlight)(count $argv)' words'(set_color normal)' in '(set_color $highlight)(readingtime $argv)' seconds'(set_color normal)'.'
+sleep 1.5
+
+for word in $argv
+	# Set highlighted letter, arrow location, etc.
+	switch (string length $word)
+		case 1
+			set centerww $centerw
+
+			set space ""
+			set colorword (colorletter 1 $word)
+		case 2 3 4 5
+			set centerww (math $centerw - 1)
+
+			set space " "
+			set colorword (colorletter 2 $word)
+		case 6 7 8 9
+			set centerww (math $centerw - 2)
+
+			set space "  "
+			set colorword (colorletter 3 $word)
+		case 10 11 12 13
+			set centerww (math $centerw - 3)
+
+			set space "   "
+			set colorword (colorletter 4 $word)
+		case '*'
+			set centerww (math $centerw - 4)
+
+			set space "    "
+			set colorword (colorletter 5 $word)
+	end
+
+	# Calculate spaces needed to center
+	set center (printf ' %.0s' (seq $centerww))
+
+	# Echo stuff
+	tput cup (math $centerh - 1) $centerww
+		echo -e -n (set_color black --bold)"\r$center$space↓$space"(set_color normal)
+	tput cup $centerh $centerww
+		echo -e -n "\r$center$colorword$center"
+	tput cup (math $centerh + 1) $centerww
+		echo -e -n (set_color black --bold)"\r$center$space↑$space"(set_color normal)
+
+	# If the word ends with `.!?,;:`, or is longer
+	if string match -r -q '[.!?,;]$' $word
+		sleep (math $time \* 2)
+		
+		# Print blank line after period.
+		if string match -r -q '\.$' $word
+			tput cup (math $centerh - 1) $centerww
+				echo -e -n "\r$center$space$space"
+			tput cup $centerh $centerww
+				echo -e -n "\r$center$center"
+			tput cup (math $centerh + 1) $centerww
+				echo -e -n "\r$center$space$space"
+
+			sleep (math $time \* 2)
+		end
+	else
+		sleep $time
+	end
+end
