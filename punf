@@ -9,10 +9,8 @@
 set host ssh
 
 # Your sr.ht key
-if test $host = sr.ht
-	set key (cat $HOME/$host)
-else if test $host = punpun.xyz
-	set key (cat $HOME/$host)
+if test $host = sr.ht -o $host = punpun.xyz
+	set key (cat $HOME/.$host)
 end
 
 # Log urls
@@ -33,6 +31,14 @@ set browser false
 
 ## FUNCTIONS
 
+# This function checks if X is running
+function checkx
+	if test -z $DISPLAY
+		echo 'You are not using X right now, can\'t take screenshot.'
+		exit 1
+	end
+end
+
 # This function sets $file to your clipboard contents
 function clipboard
 	set -g uploadme /tmp/clipboard.txt
@@ -44,10 +50,7 @@ end
 
 # This function sets $file to a full screen scrot
 function desktop
-	if test -z $DISPLAY
-		echo "You are not using X right now, can't make screenshot."
-		exit 1
-	end
+	checkx
 
 	set -g uploadme /tmp/scrot.png
 
@@ -61,7 +64,7 @@ function file
 	if test -f $argv
 		set -g uploadme $argv
 	else
-		echo "File not found."
+		echo 'File not found.'
 		exit 1
 	end
 
@@ -79,16 +82,13 @@ end
 
 # This function sets $file to a selection scrot
 function selection
-	if test -z $DISPLAY
-		echo "You are not using X right now, can't make screenshot."
-		exit 1
-	end
+	checkx
 
 	set -g uploadme /tmp/scrot.png
 
 	maim --hidecursor -s -b 3 -c 250,250,250 $uploadme ^ /dev/null
 	if test $status -ge 1
-		echo "Selection cancelled."
+		echo 'Selection cancelled.'
 		exit 1
 	end
 
@@ -97,7 +97,7 @@ end
 
 # This function sets $file to a url
 function url
-	set type (echo $argv | rev | cut -d . -f 1 | rev)
+	set type (string replace -r '.*\.' '' $argv)
 	set -g uploadme /tmp/url.$type
 
 	wget --quiet $argv -O $uploadme
@@ -109,18 +109,18 @@ end
 function upload
 	switch $host
 		case sr.ht
-			set -g url (curl --silent -F key=$key -F file="@$uploadme" https://sr.ht/api/upload | grep -o -i "https://sr.ht/[a-z0-9._-]*")
+			set -g url (curl --silent -F key=$key -F file="@$uploadme" https://sr.ht/api/upload | string match -r 'https://sr.ht/[a-zA-Z0-9._-]*')
 		case punpun.xyz
 			set -g url (curl --silent -F key=$key -F file="@$uploadme" https://punpun.xyz/upload)
 		case ssh
-			set basename (date +"%N" | md5sum | cut -c -4)
+			set basename (date +%N | md5sum | string sub -l 4)
 			set extension (basename $uploadme | awk -F . '{print $NF}')
 
-			scp -q $uploadme onodera@raspun:/srv/http/$basename.$extension &
+			scp -q $uploadme onodera@raspun:/srv/http/filehost/$basename.$extension &
 
 			set -g url https://punpun.xyz/$basename.$extension
 		case "*"
-			echo "please choose between sr.ht or punpun.xyz"
+			echo 'please choose between sr.ht, punpun.xyz or ssh.'
 			exit 1
 	end
 end
@@ -163,12 +163,12 @@ set quiet false
 if test (count $argv) -ge 1
 	switch $argv[1]
 		case -h --help
-			echo -e "Usage: punf [options] [file/url]\n"
-			echo "options:"
-			echo "  -c,   --clipboard       upload your clipboard as text"
-			echo "  -s,   --selection       upload selection scrot"
-			echo "  -q,   --quiet           disable all feedback (for scripts using punf)"
-			echo "  -h,   --help            print help and exit"
+			echo -e 'Usage: punf [options] [file/url]\n'
+			echo 'options:'
+			echo '  -c,   --clipboard       upload your clipboard as text'
+			echo '  -s,   --selection       upload selection scrot'
+			echo '  -q,   --quiet           disable all feedback (for scripts using punf)'
+			echo '  -h,   --help            print help and exit'
 			exit 0
 		case -p -c --clipboard
 			clipboard
@@ -177,9 +177,9 @@ if test (count $argv) -ge 1
 		case -q --quiet
 			set quiet true
 			file $argv[2]
-		case "http*"
+		case 'http*'
 			url $argv[1]
-		case "*"
+		case '*'
 			file $argv[1]
 	end
 else

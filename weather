@@ -7,11 +7,11 @@
 
 # Download weather info
 set weatherfile /tmp/weather.xml
-wget -q "http://xml.buienradar.nl/" -O $weatherfile
+wget -q 'http://xml.buienradar.nl/' -O $weatherfile
 
 # Extract info
-set temp (xmllint --format $weatherfile | grep -A 14 "\"Utrecht\"" | grep "temperatuurGC" | grep -o "[0-9.]")
-set type (xmllint --format $weatherfile | grep -A 14 "\"Utrecht\"" | grep "icoonactueel" | grep -o "zin=\".*\" " | cut -c 5- | rev | cut -c 2- | rev)
+set temp (xmllint --format $weatherfile | grep -A 14 '"Utrecht"' | grep 'temperatuurGC' | grep -o '[0-9.]')
+set type (xmllint --format $weatherfile | grep -A 14 '"Utrecht"' | grep 'icoonactueel' | grep -o 'zin=".*" ' | cut -c 5- | rev | cut -c 2- | rev)
 
 if test (count $argv) -ge 1
 	switch $argv[1]

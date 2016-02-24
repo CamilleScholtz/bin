@@ -7,7 +7,7 @@
 
 while true
 	set file (cat $HOME/.rmafter)
-	set current (date +"%s")
+	set current (date +%s)
 
 	for line in $file
 		set time (echo $line | cut -d \  -f 1)

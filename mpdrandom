@@ -5,9 +5,9 @@
 
 mpc -q random
 
-set random (mpc | grep -o "random: [a-z]*" | cut -d \  -f 2)
+set random (mpc | string match -r 'random: [a-z]*' | cut -d \  -f 2)
 if test $random = on
-	notify "mpd random mode is now on" &
+	notify 'mpd random mode is now on' &
 else
-	notify "mpd random mode is now off" &
+	notify 'mpd random mode is now off' &
 end

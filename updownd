@@ -1,0 +1,29 @@
+#!/bin/fish
+#
+# updownd - A small daemon script that tracks tramsissions up/download speed.
+# onodera, https://github.com/onodera-punpun
+
+## CONFIGURATION
+
+# Set the file where updownd logs its resutls
+set trackfile /tmp/updownd.log
+
+
+## EXECUTE
+
+rm $trackfile
+touch $trackfile
+
+while true
+	set time (date +%s)
+	set stats (transmission-remote -l | tail -n 1 | tr -s \  \n)
+
+	if test (cat $trackfile | wc -l) -lt 10
+		echo $time $stats[-1] $stats[-2] >> $trackfile
+	else
+		sed -i '$d' $trackfile
+		echo $time $stats[-1] $stats[-2] >> $trackfile
+	end
+
+	sleep 8
+end

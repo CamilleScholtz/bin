@@ -12,8 +12,8 @@ set learn kata kata_k kata_s kata_t
 
 ## DEFINE
 
-set yay "Yay" "Well done" "Keep it up" "Very good" "Kabam" "Killing it" "Not bad" "Nice going" "Good job" "Perfect" "Amazing" "Wowzers" "You CAN even" "C-C-C-COMBO BREAKER" "That's the spirit" "Excellent" "Niiiiice" "Noice" "Yatta" "Sugoi"
-set nay "Nay"  "Wrong again" "WROOOONG" "That's SO wrong" "FUCK YOU" "You can do better" "Please" "You disgust me" "Kill yourself" "You suck" "Failure" "Just keep trying" "You're a dissapointment" "You should have been swallowed" "Zipperhead" "What the fuck man"
+set yay 'Yay' 'Well done' 'Keep it up' 'Very good' 'Kabam' 'Killing it' 'Not bad' 'Nice going' 'Good job' 'Perfect' 'Amazing' 'Wowzers' 'You CAN even' 'C-C-C-COMBO BREAKER' 'That\'s the spirit' 'Excellent' 'Niiiiice' 'Noice' 'Yatta' 'Sugoi'
+set nay 'Nay' 'Wrong again' 'WROOOONG' 'That\'s SO wrong' 'FUCK YOU' 'You can do better' 'Please' 'You disgust me' 'Kill yourself' 'You suck' 'Failure' 'Just keep trying' 'You\'re a dissapointment' 'You should have been swallowed' 'Zipperhead' 'What the fuck man'
 
 set kata ア イ ウ エ オ ン
 set roma a i u e o n
@@ -65,7 +65,7 @@ set roma_p pa pi pu pe po
 # This function gets a random katakana and it's answer
 function randomkata
 	set random (seq (count $$learn) | shuf -n 1)
-	set learnroma (echo $learn | sed "s/kata/roma/g" | tr \  \n)
+	set learnroma (string replace 'kata' 'roma' $learn | string split ' ')
 
 	set -g question (echo $$learn | cut -d \  -f $random)
 	set -g answer (echo $$learnroma | cut -d \  -f $random)

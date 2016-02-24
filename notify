@@ -14,26 +14,29 @@ set bg EEEEEE
 # Set font
 set font -artwiz-cure-medium-r-normal--11-110-75-75-p-90-iso8859-1,-freetype-kochismall-medium-r-normal--9-90-75-75-p-77-iso10646-1,-freetype-baekmuksmall-medium-r-normal--9-90-75-75-p-38-iso10646-1
 
+# Set notification duration
+set duration 4
+
 
 ## EXECUTE
 
 if test (count $argv) -ge 1
 	switch $argv[1]
 		case -h --help
-			echo -e "Usage: notify [options] [message]\n"
-			echo "options:"
-			echo "  -h,   --help                print help and exit"
+			echo -e 'Usage: notify [options] [message]\n'
+			echo 'options:'
+			echo '  -h,   --help                print help and exit'
 			exit 0
-		case "*"
-			pkill -f "lemonbar -g 900x56"
+		case '*'
+			pkill -f 'lemonbar -g 900x56'
 
 			echo "%{B#$bg}%{r}     $argv     " | lemonbar -g 900x56+988+32 -d -p -f $font -B \#00$bg -F \#$fg &
 
-			sleep 4
+			sleep $duration
 			set pid (jobs -p | cut -d \n -f 2)
 			kill $pid ^ /dev/null
 		end
 else
-	echo "Please specify a message."
+	echo 'Please specify a message.'
 	exit 1
 end

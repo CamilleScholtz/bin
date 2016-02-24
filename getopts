@@ -1,0 +1,84 @@
+#!/bin/fish
+#
+# getopts - Custom fish getopts
+# onodera, https://github.com/onodera-punpun
+# This function sets $file to a selection scrot
+
+## FUNCTIONS
+
+# This function replaces dashes with _DASH_ (dashes fuck up set)
+function cleandash
+	for arg in $argv
+		printf $arg\n | sed "s/-/_DASH_/g"
+	end
+end
+
+# This function prints the options
+function printopts
+	for arg in $argv
+		switch $arg
+			case :
+				break;
+			# TODO: Make [*] only accept numbers
+			case '*[?]'
+				set opts (echo $arg | grep -o "[1-9]")
+				set arg (echo $arg | cut -d [ -f 1)
+
+				echo $arg $opts
+			case '*'
+				echo $arg
+		end
+	end
+end
+
+# This function prints the arguments
+function printargs
+	set arguments false
+
+	for arg in $argv
+		if test $arg = ":"
+			set arguments true
+			continue
+		end
+
+		if test $arguments = true
+			echo $arg
+		end
+	end
+end
+
+
+## EXECUTE
+
+set argv (cleandash $argv)
+
+if test (count $argv) -ge 2
+	for opt in (printopts $argv)
+		if test (echo $opt | grep " [1-9]")
+			set val (echo $opt | cut -d \  -f 2)
+			set opt (echo $opt | cut -d \  -f 1)
+		end
+
+		# TODO: Make this grep safer
+		if test (printargs $argv | grep $opt)
+			if test $val
+				set valopt (printargs $argv | grep -A $val $opt | tail -n $val | tr \n \  )
+				if test (echo $valopt | grep _DASH_)
+					echo (echo $opt | sed "s/_DASH_/-/")" requeres at least $val arguments."
+					exit 1
+				end
+				
+				set return $return $opt\ $valopt
+			else
+				set return $return $opt
+			end
+		end
+	end
+else
+	echo "Please specify at least one option and one argument."
+	exit 1
+end
+
+for line in $return
+	printf (echo $line | sed "s/_DASH_/-/g")\n
+end
