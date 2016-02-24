@@ -38,7 +38,7 @@ end
 # This function tries to fuzzy find the right directory
 function directory
 	# Check if the show already has an alias
-	if test -n (grep "^$name=" $configdir/alias) -a $realias = 'false' ^ /dev/null
+	if test -n (grep "^$name=" $configdir/alias) -a $realias = false ^ /dev/null
 		set -g path (grep "^$name=" $configdir/alias | string replace -r '.*=' '')
 		return
 	end
@@ -112,7 +112,7 @@ end
 # This function pauses mpd, and starts mpv
 function play
 	echo "Playing episode $current/$total, "(set_color $highlight)"$name"(set_color normal)"."
-	if test -n (string match -r '.part$' $file) ^ /dev/null
+	if string match -r -q '.part$' $file
 		echo 'This episode has not finished downloading yet.'
 		echo 'Playback might be buggy or not work at all!'
 	end
