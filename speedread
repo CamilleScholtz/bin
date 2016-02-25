@@ -42,8 +42,8 @@ function readingtime
 	set readingtime 0
 
 	for word in $argv
-		# If the word ends with `.!?,;:`, or is longer
-		if string match -r -q '[.!?,;]$' $word
+		# If the word ends with `.!?,;:`, or is longer than 9 characters
+		if string match -r -q '[.!?,;]$' $word; or test (string length $word) -ge 9
 			set readingtime (math $readingtime + (math $time \* 2))
 		
 			# blank line
@@ -126,8 +126,8 @@ for word in $argv
 	tput cup (math $centerh + 1) $centerww
 		echo -e -n (set_color black --bold)"\r$center$space↑$space"(set_color normal)
 
-	# If the word ends with `.!?,;:`, or is longer
-	if string match -r -q '[.!?,;]$' $word
+	# If the word ends with `.!?,;:`, or is longer than 9 characters
+	if string match -r -q '[.!?,;]$' $word; or test (string length $word) -ge 9
 		sleep (math $time \* 2)
 		
 		# Print blank line after period.
