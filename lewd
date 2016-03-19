@@ -1,0 +1,15 @@
+#!/bin/fish
+#
+# lewd - ;^)
+# onodera, https://github.com/onodera-punpun
+
+## EXECUTE
+
+while true
+	for i in 1 2 3 4 4 3 2 1
+		set length (printf '=%.0s' (seq $i))
+		echo ':o'$length'3'
+		sleep 0.1
+		clear
+	end
+end

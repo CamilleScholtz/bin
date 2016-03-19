@@ -10,8 +10,9 @@ set weatherfile /tmp/weather.xml
 wget -q 'http://xml.buienradar.nl/' -O $weatherfile
 
 # Extract info
-set temp (xmllint --format $weatherfile | grep -A 14 '"Utrecht"' | grep 'temperatuurGC' | grep -o '[0-9.]')
-set type (xmllint --format $weatherfile | grep -A 14 '"Utrecht"' | grep 'icoonactueel' | grep -o 'zin=".*" ' | cut -c 5- | rev | cut -c 2- | rev)
+set data (xmllint --format $weatherfile | grep -A 14 '"Utrecht"')
+set temp (string match -r 'temperatuurGC.*' $data | string match -r '[0-9.]+')
+set type (string match -r ' zin="[a-z]+' $data | string match -r '".*' | string trim -c '"')
 
 if test (count $argv) -ge 1
 	switch $argv[1]
@@ -23,11 +24,11 @@ if test (count $argv) -ge 1
 			echo "  -h,   --help            print help and exit"
 			exit 0
 		case -c --celsius
-			echo (echo $temp | tr -d \ )°C
+			echo $temp°C
 		case -t --type
-			echo $type | tr -d \"
+			echo $type
 		case -ct
-			echo (echo $temp | tr -d \ )°C, (echo $type | tr -d \")
+			echo "$temp°C, $type"
 		case "*"
 			echo "Invalid option, use -h for help."
 	end

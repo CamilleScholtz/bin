@@ -3,8 +3,6 @@
 # notify - Display notifications using bar
 # onodera, https://github.com/onodera-punpun
 
-# TODO: Fix fullscreen windows fucking up when a notify comes along
-
 ## CONFIGURATION
 
 # Set colors
@@ -12,7 +10,7 @@ set fg 021B21
 set bg EEEEEE
 
 # Set font
-set font -artwiz-cure-medium-r-normal--11-110-75-75-p-90-iso8859-1,-freetype-kochismall-medium-r-normal--9-90-75-75-p-77-iso10646-1,-freetype-baekmuksmall-medium-r-normal--9-90-75-75-p-38-iso10646-1
+set font -artwiz-cure-medium-r-normal--11-110-75-75-p-90-iso8859-1 -freetype-kochismall-medium-r-normal--9-90-75-75-p-77-iso10646-1 -freetype-baekmuksmall-medium-r-normal--9-90-75-75-p-38-iso10646-1
 
 # Set notification duration
 set duration 4
@@ -28,10 +26,13 @@ if test (count $argv) -ge 1
 			echo '  -h,   --help                print help and exit'
 			exit 0
 		case '*'
+			# Kill old notify
 			pkill -f 'lemonbar -g 900x56'
 
-			echo "%{B#$bg}%{r}     $argv     " | lemonbar -g 900x56+988+32 -d -p -f $font -B \#00$bg -F \#$fg &
+			# TODO: Make scrolling work in invisible area
+			echo "%{B#$bg}%{r}%{A4:xdesktop -p:}%{A5:xdesktop -n:}%{A:pkill -f 'lemonbar -g 900x56':}     $argv     %{A}%{A}%{A}" | lemonbar -g 900x56+988+32 -d -p -f $font[1] -f $font[2] -f $font[3] -B \#00$bg -F \#$fg | dash &
 
+			# Kill after $duration
 			sleep $duration
 			set pid (jobs -p | cut -d \n -f 2)
 			kill $pid ^ /dev/null

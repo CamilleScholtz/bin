@@ -1,0 +1,8 @@
+#!/bin/fish
+#
+# shouldi - Makes important decisions for you
+# onodera, https://github.com/onodera-punpun
+
+## EXECUTE
+
+echo -e 'Yes.\nNo.' | shuf -n 1

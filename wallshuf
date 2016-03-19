@@ -8,13 +8,10 @@
 # Set wallshuf location
 set wallshufdir $HOME/.wallshuf
 
-# Set setroot command (for example hsetroot [OPTIONS], feh [OPTIONS], etc.
-set command setroot -c
-
-# Set start times and accepted wallpaper types (currently only one allowed)
-set morning 6 bright
-set afternoon 13 bright
-set night 20 dark
+# Set start times, accepted wallpaper type (currently only one allowed), and background color
+set morning 6 center DCD5BF
+set afternoon 13 center DCD5BF
+set night 20 center 394953
 
 # Set highlight color
 set highlight yellow
@@ -25,14 +22,14 @@ set highlight yellow
 # This functions sets the wallpaper
 function setrandomwall
 	# Exit if the wallshuf dir does not exist
-	if not test -d $wallshufdir/$argv
-		echo "No wallpapers in "(set_color $highlight)"$wallshufdir/$argv"(set_color normal)"."
+	if not test -d $wallshufdir/$argv[1]
+		echo "No wallpapers in "(set_color $highlight)"$wallshufdir/$argv[1]"(set_color normal)"."
 		exit 1
 	end
 
-	set wallpaper (ls $wallshufdir/$argv | shuf -n 1)
+	set wallpaper (ls $wallshufdir/$argv[1] | shuf -n 1)
 
-	eval $command $wallshufdir/$argv/$wallpaper
+	setroot -c --bg-color \#$argv[2] $wallshufdir/$argv[1]/$wallpaper
 	echo "A $argv wallpaper has been set, "(set_color $highlight)"$wallpaper"(set_color normal)"."
 end
 
@@ -46,10 +43,10 @@ else
 	set hour (date +%H)
 
 	if test $hour -ge $morning[1] -a $hour -lt $afternoon[1]
-		setrandomwall $morning[2]
+		setrandomwall $morning[2] $morning[3]
 	else if test $hour -ge $afternoon[1] -a $hour -lt $night[1]
-		setrandomwall $afternoon[2]
+		setrandomwall $afternoon[2] $afternoon[3]
 	else
-		setrandomwall $night[2]
+		setrandomwall $night[2] $night[3]
 	end
 end

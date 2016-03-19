@@ -6,7 +6,7 @@
 ## CONFIGURATION
 
 # display word for X seconds
-set time 0.1
+set time 0.08
 
 # Set highlight color
 set highlight yellow
@@ -38,24 +38,25 @@ function colorletter
 end
 
 # This function calculates the reading time
+# TODO: Speed this up
 function readingtime
 	set readingtime 0
 
 	for word in $argv
 		# If the word ends with `.!?,;:`, or is longer than 9 characters
 		if string match -r -q '[.!?,;]$' $word; or test (string length $word) -ge 9
-			set readingtime (math $readingtime + (math $time \* 2))
-		
+			set readingtime $readingtime $time $time
+
 			# blank line
 			if string match -r -q '\.$' $word
-				set readingtime (math $readingtime + (math $time \* 2))
+				set readingtime $readingtime $time $time
 			end
 		else
-			set readingtime (math $readingtime + $time)
+			set readingtime $readingtime $time
 		end
 	end
 
-	echo $readingtime
+	math (string join '+' $readingtime)
 end
 
 
@@ -78,12 +79,12 @@ end
 set argv (string split ' ' $argv)
 
 # Show countdown
+echo -e -n 'Reading '(set_color $highlight)(count $argv)' words'(set_color normal)' in '(set_color $highlight)(readingtime $argv)' seconds'(set_color normal)', '
+sleep 1.5
 for count in '3, ' '2, ' '1... '
 	echo -n $count
 	sleep 0.5
 end
-echo -e -n 'reading '(set_color $highlight)(count $argv)' words'(set_color normal)' in '(set_color $highlight)(readingtime $argv)' seconds'(set_color normal)'.'
-sleep 1.5
 
 for word in $argv
 	# Set highlighted letter, arrow location, etc.

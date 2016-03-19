@@ -23,7 +23,7 @@ end
 
 # Download weather info
 set rainfile /tmp/rain.txt
-wget -q -O- "http://gps.buienradar.nl/getrr.php?lat=52.0646&lon=5.2065" | sed "s/|.*//g" > $rainfile
+wget -q -O- "http://gps.buienradar.nl/getrr.php?lat=52.0646&lon=5.2065" | string replace -r '\|.*' '' > $rainfile
 
 if test (count $argv) -ge 1
 	switch $argv[1]

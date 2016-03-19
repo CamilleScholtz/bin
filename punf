@@ -6,7 +6,7 @@
 ## CONFIGURATION
 
 # Choose default host (sr.ht, punpun.xyz or ssh)
-set host ssh
+set host sr.ht
 
 # Your sr.ht key
 if test $host = sr.ht -o $host = punpun.xyz
@@ -116,7 +116,7 @@ function upload
 			set basename (date +%N | md5sum | string sub -l 4)
 			set extension (basename $uploadme | awk -F . '{print $NF}')
 
-			scp -q $uploadme onodera@raspun:/srv/http/filehost/$basename.$extension &
+			scp -q $uploadme onodera@raspun:/srv/punpun.xyz/filehost/$basename.$extension &
 
 			set -g url https://punpun.xyz/$basename.$extension
 		case "*"
