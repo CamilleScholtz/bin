@@ -18,7 +18,7 @@ set highlight yellow
 ## EXECUTE
 
 if test (count $argv) -eq 1
-	switch $argv[1]
+	switch $argv
 		case -h --help
 			echo -e 'Usage: cover [options]\n'
 			echo 'options:'
@@ -46,7 +46,7 @@ if test (count $argv) -eq 1
 							exit 1
 						end
 					end
-				case "*"
+				case '*'
 					exit 0
 			end
 		case -c --current
@@ -55,13 +55,13 @@ if test (count $argv) -eq 1
 			convert $musicdir/$path/cover.* -filter Lanczos -thumbnail $size! $musicdir/$path/cover_popup.png > /dev/null
 
 			if test $status -eq 0
-				echo "Cover resized successfully."
+				echo 'Cover resized successfully.'
 			else
-				echo "This album doesn't have a cover."
+				echo 'This album doesn\'t have a cover.'
 				exit 1
 			end
-		case "*"
-			echo "Invalid option, use -h for help."
+		case '*'
+			echo 'Invalid option, use -h for help.'
 			exit 1
 	end
 else
@@ -70,7 +70,7 @@ else
 	pqiv $musicdir/$path/cover.*
 
 	if test $status -ge 1
-		echo "This album doesn't have a cover."
+		echo 'This album doesn\'t have a cover.'
 		exit 1
 	end
 end

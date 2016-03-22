@@ -1,0 +1,76 @@
+#!/bin/fish
+#
+# brightness - Sets screen brightness
+# onodera, https://github.com/onodera-punpun
+
+# Set backlight sys file location
+set backlight /sys/class/backlight/intel_backlight/brightness
+
+# Set highlight color
+set highlight yellow
+
+
+## EXECUTE
+
+if test (count $argv) -eq 1
+	switch $argv
+		case -h --help
+			echo -e 'Usage: brightness [options] [0-100]\n'
+			echo 'options:'
+			echo '  -h,   --help            print help and exit'
+			exit 0
+		case (seq 100)
+			switch $argv
+				case (seq 1 10)
+					sudo sh -c "echo 100 > $backlight"
+				case (seq 11 20)
+					sudo sh -c "echo 200 > $backlight"
+				case (seq 21 30)
+					sudo sh -c "echo 300 > $backlight"
+				case (seq 31 40)
+					sudo sh -c "echo 400 > $backlight"
+				case (seq 41 50)
+					sudo sh -c "echo 500 > $backlight"
+				case (seq 51 60)
+					sudo sh -c "echo 600 > $backlight"
+				case (seq 61 70)
+					sudo sh -c "echo 700 > $backlight"
+				case (seq 71 80)
+					sudo sh -c "echo 800 > $backlight"
+				case (seq 81 90)
+					sudo sh -c "echo 900 > $backlight"
+				case (seq 91 100)
+					sudo sh -c "echo 937 > $backlight"
+		case '*'
+			echo 'Invalid option, use -h for help.'
+			exit 1
+		end
+	end
+else
+	set brightness (cat $backlight)
+	switch $brightness
+		case (seq 1 100)
+			set brightness 10%
+		case (seq 101 200)
+			set brightness 20%
+		case (seq 201 300)
+			set brightness 30%
+		case (seq 301 400)
+			set brightness 40%
+		case (seq 401 500)
+			set brightness 50%
+		case (seq 501 600)
+			set brightness 60%
+		case (seq 601 700)
+			set brightness 70%
+		case (seq 701 800)
+			set brightness 80%
+		case (seq 801 900)
+			set brightness 90%
+		case (seq 901 1000)
+			set brightness 100%
+	end
+
+	echo "The current screen brightness is $brightness."
+	exit 1
+end
