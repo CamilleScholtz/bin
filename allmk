@@ -6,7 +6,7 @@
 ## CONFIGURATION
 
 # Config location
-config="/etc/mk.conf"
+config="/etc/prt.conf"
 
 # Upgraded packages list location
 upgraded="/home/onodera/upgraded"

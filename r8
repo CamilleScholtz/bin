@@ -7,4 +7,4 @@
 
 # Get random r8ing and echo it 
 set rating (seq 8 | shuf -n 1)
-echo "gr8 m8 i r8 $rating/8"
+echo "gr8 m8 i r8 this desktop $rating/8"
