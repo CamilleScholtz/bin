@@ -5,10 +5,10 @@
 
 ## CONFIGURATION
 
-# Set wallshuf location
-set wallshufdir $HOME/.wallshuf
+# Set rootshuf location
+set rootshufdir $HOME/.rootshuf
 
-# Set start times, accepted wallpaper type (currently only one allowed), and background color
+# Set start times and accepted root image types
 set morning 6 bright
 set afternoon 13 bright
 set night 20 dark
@@ -19,40 +19,40 @@ set highlight yellow
 
 ## FUNCTIONS
 
-# This functions sets the wallpaper
-function setrandomwall
-	set dir (
+# This functions sets the root image
+function setrandomrootimage
+	set type (
 		for directory in $argv
 			echo $directory
 		end | shuf -n 1
 	)
 
-	# Exit if the wallshuf dir does not exist
-	if not test -d $wallshufdir/$dir
-		echo "No wallpapers in "(set_color $highlight)"$wallshufdir/$dir"(set_color normal)"."
+	# Exit if the rootshuf dir does not exist
+	if not test -d $rootshufdir/$dir
+		echo "No images in "(set_color $highlight)"$rootshufdir/$type"(set_color normal)"."
 		exit 1
 	end
 
-	set wallpaper (ls $wallshufdir/$dir[1] | shuf -n 1)
+	set image (ls $rootshufdir/$type | shuf -n 1)
 
-	setroot -c $wallshufdir/$dir/$wallpaper
-	echo "A $dir wallpaper has been set, "(set_color $highlight)"$wallpaper"(set_color normal)"."
+	setroot -c $rootshufdir/$type/$image ^ /dev/null
+	echo "A $type image has been set as the root image, "(set_color $highlight)"$image"(set_color normal)"."
 end
 
 
 ## EXECUTE
 
-if test (count $argv) -eq 1
-	setrandomwall $argv
+if test (count $argv) -ge 1
+	setrandomrootimage $argv
 else
 	# Get time
 	set hour (date +%H)
 
 	if test $hour -ge $morning[1] -a $hour -lt $afternoon[1]
-		setrandomwall $morning[2..-1]
+		setrandomrootimage $morning[2..-1]
 	else if test $hour -ge $afternoon[1] -a $hour -lt $night[1]
-		setrandomwall $afternoon[2..-1]
+		setrandomrootimage $afternoon[2..-1]
 	else
-		setrandomwall $night[2..-1]
+		setrandomrootimage $night[2..-1]
 	end
 end
