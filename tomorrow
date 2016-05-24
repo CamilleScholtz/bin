@@ -6,4 +6,4 @@
 ## EXECUTE
 
 set day (date --date=tomorrow +%A)
-echo "Tomorrow is a "(set_color yellow)"$day"(set_color normal)"."
+echo "Tomorrow is a "(set_color yellow --bold)"$day"(set_color normal)"."

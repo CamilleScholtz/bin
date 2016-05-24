@@ -3,37 +3,17 @@
 # tile - Tile windows
 # onodera, https://github.com/onodera-punpun
 
-## CONFIGURATION
-
-set titleheight 30
-
-
-## FUNCTIONS
-
-# This functions prints the locations of all existing windows
-function location
-	for window in (lsw)
-		echo "$window "(wattr xywh $window)
-	end
-end
-
-
-## EXECUTE
-
-set location (location)
-set window (pfw)
+set 0 0
+set 1 0
+set 2 0
+set 3 0
+set 4 0
 
 #  ---------------
 # |         |  3  |
 # |    1  0 | -2- |
 # |         |  4  |
 #  ---------------
-
-set 0 0
-set 1 0
-set 2 0
-set 3 0
-set 4 0
 
 # Check which slots are not empty
 if string match -q -r '237 136 1460 895' $location
@@ -55,10 +35,10 @@ end
 echo $0$1$2$3$4
 
 if test $0$1$2$3$4 -eq 00000
-	wtp 237 136 1460 (math 895 - $titleheight) $window
+	wtp 237 136 1460 895 $window
 else if test $0$1$2$3$4 -eq 00100 -o 00010 -o 00001 -o 00110 -o 00111 -o 00011
-	wtp 237 136 942 (math 895 - $titleheight) $window
+	wtp 237 136 942 895 $window
 else if test $0$1$2$3$4 -eq 10000 -o 01000
-	wtp 1217 136 466 (math 895 - $titleheight) $window
-	wtp 237 136 942 (math 895 - $titleheight) (string match -r '.* 237 136 1460 895' $location | cut -d ' ' -f 1)
+	wtp 1217 136 466 895 $window
+	wtp 237 136 942 895 (string match -r '.* 237 136 1460 895' $location | cut -d ' ' -f 1)
 end

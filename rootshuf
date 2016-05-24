@@ -11,10 +11,10 @@ set rootshufdir $HOME/.rootshuf
 # Set start times and accepted root image types
 set morning 6 bright
 set afternoon 13 bright
-set night 20 dark
+set night 21 dark
 
 # Set highlight color
-set highlight yellow
+set highlight yellow --bold
 
 
 ## FUNCTIONS

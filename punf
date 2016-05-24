@@ -6,7 +6,7 @@
 ## CONFIGURATION
 
 # Choose default host (sr.ht, punpun.xyz or ssh)
-set host sr.ht
+set host ssh
 
 # Your sr.ht key
 if test $host = sr.ht -o $host = punpun.xyz
@@ -116,7 +116,7 @@ function upload
 			set basename (date +%N | md5sum | string sub -l 4)
 			set extension (basename $uploadme | awk -F . '{print $NF}')
 
-			scp -q $uploadme onodera@raspun:/srv/punpun.xyz/filehost/$basename.$extension &
+			scp -q $uploadme root@punpun.xyz:/srv/filehost/$basename.$extension
 
 			set -g url https://punpun.xyz/$basename.$extension
 		case "*"
@@ -166,12 +166,15 @@ if test (count $argv) -ge 1
 			echo -e 'Usage: punf [options] [file/url]\n'
 			echo 'options:'
 			echo '  -c,   --clipboard       upload your clipboard as text'
+			echo '  -d,   --desktop         force desktop scrot'
 			echo '  -s,   --selection       upload selection scrot'
 			echo '  -q,   --quiet           disable all feedback (for scripts using punf)'
 			echo '  -h,   --help            print help and exit'
 			exit 0
 		case -p -c --clipboard
 			clipboard
+		case -d --desktop
+			desktop
 		case -s --selection
 			selection
 		case -q --quiet

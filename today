@@ -1,0 +1,9 @@
+#!/bin/fish
+#
+# today - A script to get todays day.
+# onodera, https://github.com/onodera-punpun
+
+## EXECUTE
+
+set day (date +%A)
+echo "Today is a "(set_color yellow --bold)"$day"(set_color normal)"."
