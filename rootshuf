@@ -11,7 +11,7 @@ set rootshufdir $HOME/.rootshuf
 # Set start times and accepted root image types
 set morning 6 bright
 set afternoon 13 bright
-set night 21 dark
+set night 22 dark
 
 # Set highlight color
 set highlight yellow --bold
@@ -35,7 +35,7 @@ function setrandomrootimage
 
 	set image (ls $rootshufdir/$type | shuf -n 1)
 
-	setroot -c $rootshufdir/$type/$image ^ /dev/null
+	setroot -c $rootshufdir/$type/$image ^/dev/null
 	echo "A $type root image has been set, "(set_color $highlight)"$image"(set_color normal)"."
 end
 

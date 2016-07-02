@@ -41,7 +41,7 @@ if test (count $argv) -eq 1
 						set path (echo $string | rev | string split '/' $line | tail -n 3)
 
 						echo "Resizing cover $current/$all, "(set_color $highlight)"$path[2]"(set_color normal)"."
-						convert $musicdir/$path[1]/$path[2]/$path[3] -filter Lanczos -thumbnail $size! $musicdir/$path[1]/$path[2]/cover_popup.png ^ /dev/null
+						convert $musicdir/$path[1]/$path[2]/$path[3] -filter Lanczos -thumbnail $size! $musicdir/$path[1]/$path[2]/cover_popup.png ^/dev/null
 						if test $status -ge 1
 							exit 1
 						end
@@ -52,7 +52,7 @@ if test (count $argv) -eq 1
 		case -c --current
 			set path (mpc -f '%file%' | cut -d \n -f 1 | rev | cut -d / -f 2- | rev)
 
-			convert $musicdir/$path/cover.* -filter Lanczos -thumbnail $size! $musicdir/$path/cover_popup.png > /dev/null
+			convert $musicdir/$path/cover.* -filter Lanczos -thumbnail $size! $musicdir/$path/cover_popup.png >/dev/null
 
 			if test $status -eq 0
 				echo 'Cover resized successfully.'

@@ -3,6 +3,12 @@
 # tile - Tile windows
 # onodera, https://github.com/onodera-punpun
 
+set location (
+	for window in (xdo id -d)
+		xwinfo -g $window
+	end
+)
+
 set 0 0
 set 1 0
 set 2 0
@@ -16,7 +22,7 @@ set 4 0
 #  ---------------
 
 # Check which slots are not empty
-if string match -q -r '237 136 1460 895' $location
+if string match -q -r '1460 895 237 136' $location
 	set 0 1
 end
 if string match -q -r '237 136 942 895' $location
@@ -35,10 +41,12 @@ end
 echo $0$1$2$3$4
 
 if test $0$1$2$3$4 -eq 00000
-	wtp 237 136 1460 895 $window
+	xdo resize -w 1460 -h 895
+	xdo move -x 237 -y 136
 else if test $0$1$2$3$4 -eq 00100 -o 00010 -o 00001 -o 00110 -o 00111 -o 00011
-	wtp 237 136 942 895 $window
+	xdo resize -w 942 -h 895
+	xdo move -x 237 -y 136
 else if test $0$1$2$3$4 -eq 10000 -o 01000
-	wtp 1217 136 466 895 $window
-	wtp 237 136 942 895 (string match -r '.* 237 136 1460 895' $location | cut -d ' ' -f 1)
+	xdo move 1217 136 466 895 $window
+	xdo move 237 136 942 895 (string match -r '.* 237 136 1460 895' $location | cut -d ' ' -f 1)
 end

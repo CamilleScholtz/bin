@@ -3,6 +3,13 @@
 # raingraph - Create graph with raininfo
 # onodera, https://github.com/onodera-punpun
 
+## CONFIGURATION
+
+# Set latitude and longitude
+set lat '52.0646'
+set lon '5.2065'
+
+
 ## FUNCTIONS
 
 # This function creates the graph
@@ -23,18 +30,10 @@ end
 
 # Download weather info
 set rainfile /tmp/rain.txt
-wget -q -O- "http://gps.buienradar.nl/getrr.php?lat=52.0646&lon=5.2065" | string replace -r '\|.*' '' > $rainfile
+wget -q -O- "http://gps.buienradar.nl/getrr.php?lat=$lat&lon=$lon" | string replace -r '\|.*' '' >$rainfile
 
 if test (count $argv) -ge 1
-	switch $argv[1]
-		case -h --help
-			echo -e "Usage: raingraph [location]\n"
-			echo "options:"
-			echo "  -h,   --help            print help and exit"
-			exit 0
-		case "*"
-			graph > $argv
-	end
+	graph >$argv
 else
-	graph > raingraph.png
+	graph >raingraph.png
 end

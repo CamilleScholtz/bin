@@ -20,7 +20,7 @@ if test (count $argv) -ge 1
 			echo '  -h,   --help            print help and exit'
 		case -s --selection
 			# Take selection scrot
-			maim --hidecursor -s -b 3 -c 250,250,250 $scrotdir/scrot(ls $scrotdir | wc -l).png
+			maim --hidecursor -s -b 3 -c 250,250,250 $scrotdir/scrot(math (ls $scrotdir | grep -c 'scrot[0-9]*.png') + 1).png
 			notify 'Scrotted selection' &
 		case '*'
 			echo 'nvalid option, use -h for help.'
@@ -28,6 +28,6 @@ if test (count $argv) -ge 1
 	end
 else
 	# Take fullscreen scrot
-	maim --hidecursor $scrotdir/scrot(ls $scrotdir | wc -l).png
+	maim --hidecursor $scrotdir/scrot(math (ls $scrotdir | grep -c 'scrot[0-9]*.png') + 1).png
 	notify 'Scrotted screen' &
 end

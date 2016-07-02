@@ -1,0 +1,8 @@
+#!/bin/fish
+#
+# takbir - allahu ackbar
+# onodera, https://github.com/onodera-punpun
+
+## EXECUTE
+
+echo 'allahu ackbar!'
