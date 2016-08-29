@@ -15,22 +15,23 @@ set temp (string match -r 'temperatuurGC.*' $data | string match -r '[0-9.]+')
 set type (string match -r ' zin="[a-z]+' $data | string match -r '".*' | string trim -c '"')
 
 if test (count $argv) -ge 1
-	switch $argv[1]
-		case -h --help
-			echo -e "Usage: weather [options]\n"
-			echo "options:"
-			echo "  -c,   --celsius         print temperature only"
-			echo "  -t,   --type            print weather typer only"
-			echo "  -h,   --help            print help and exit"
-			exit 0
-		case -c --celsius
-			echo $temp°C
-		case -t --type
-			echo $type
-		case -ct
-			echo "$temp°C, $type"
-		case "*"
-			echo "Invalid option, use -h for help."
+	getopts $argv | while read -l opt val
+		switch $opt
+			case h help
+				echo -e 'Usage: weather [options]\n'
+				echo 'options:'
+				echo '  -c,   --celsius         print temperature only'
+				echo '  -t,   --type            print weather typer only'
+				echo '  -h,   --help            print help and exit'
+				exit 0
+			case c celsius
+				echo $temp°C
+			case t type
+				echo $type
+			case '*'
+				echo 'Invalid option, use -h for help.' >/dev/stderr
+				exit 1
+		end
 	end
 else
 	echo -e "It's "(set_color yellow)(echo $temp | tr -d \ )(set_color normal)" degrees and the weather type is "(set_color yellow)(echo $type | tr -d \")(set_color normal)"."

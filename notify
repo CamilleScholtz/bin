@@ -5,38 +5,56 @@
 
 ## CONFIGURATION
 
-# Set colors
-set fg 021B21
-set bg EEEEEE
+# Set config dir location
+set configdir $HOME/.notify
 
-# Set font
-set font -artwiz-cure-medium-r-normal--11-110-75-75-p-90-iso8859-1 -freetype-kochismall-medium-r-normal--9-90-75-75-p-77-iso10646-1 -freetype-baekmuksmall-medium-r-normal--9-90-75-75-p-38-iso10646-1
 
-# Set notification duration
-set duration 4
+## FUNCTIONS
+
+# This function displays the notification
+function displaynotify
+	# Kill old notify
+	pkill -f 'lemonbar -b -g 900x56'
+
+	# TODO: Make scrolling work in invisible area
+	echo "%{B#$bg}%{r}%{A4:xdesktop -p:}%{A5:xdesktop -n:}%{A:pkill -f 'lemonbar -b -g 900x56':}     $argv     %{A}%{A}%{A}" | lemonbar -b -g 900x56+956+56 -d -b -p -f $font[1] -f $font[2] -f $font[3] -B \#00$bg -F \#$fg | dash &
+
+	# Kill after $duration
+	sleep $duration
+	set pid (jobs -p | cut -d \n -f 2)
+	kill $pid ^/dev/null
+end
 
 
 ## EXECUTE
 
+# Load config
+if not test -f $configdir/config
+	echo "$configdir/config not found." >/dev/stderr
+	echo "Move /usr/share/notify/config to $configdir." >/dev/stderr
+	exit 1
+end
+source $configdir/config
+
 if test (count $argv) -ge 1
-	switch $argv[1]
-		case -h --help
-			echo -e 'Usage: notify [options] [message]\n'
-			echo 'options:'
-			echo '  -h,   --help                print help and exit'
-			exit 0
-		case '*'
-			# Kill old notify
-			pkill -f 'lemonbar -g 900x56'
+	getopts $argv | while read -l opt val
+		switch $opt
+			case h help
+				echo -e 'Usage: notify [options] [message]\n'
+				echo 'options:'
+				echo '  -l,   --log                 log the notification'
+				echo '  -h,   --help                print help and exit'
+				exit 0
+			case l log
+				echo $val >>$configdir/log
 
-			# TODO: Make scrolling work in invisible area
-			echo "%{B#$bg}%{r}%{A4:xdesktop -p:}%{A5:xdesktop -n:}%{A:pkill -f 'lemonbar -g 900x56':}     $argv     %{A}%{A}%{A}" | lemonbar -g 900x56+988+32 -d -b -p -f $font[1] -f $font[2] -f $font[3] -B \#00$bg -F \#$fg | dash &
-
-			# Kill after $duration
-			sleep $duration
-			set pid (jobs -p | cut -d \n -f 2)
-			kill $pid ^ /dev/null
+				displaynotify $val
+				exit 0
+			case _
+				displaynotify $val
+				exit 0
 		end
+	end
 else
 	echo 'Please specify a message.'
 	exit 1

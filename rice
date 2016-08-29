@@ -19,7 +19,7 @@ set kernel (uname -r -s)
 set init sysvinit/rc
 set shell fish
 set packages (pkginfo -i | wc -l)
-set wm Openbox
+set wm SponeWM
 set font Dina
 
 

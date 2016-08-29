@@ -12,19 +12,21 @@ set scrotdir $HOME/media/images/scrots
 ## EXECUTE
 
 if test (count $argv) -ge 1
-	switch $argv[1]
-		case -h --help
-			echo -e 'Usage: scrot [options]\n'
-			echo 'options:'
-			echo '  -s,   --selection       take selection scrot'
-			echo '  -h,   --help            print help and exit'
-		case -s --selection
-			# Take selection scrot
-			maim --hidecursor -s -b 3 -c 250,250,250 $scrotdir/scrot(math (ls $scrotdir | grep -c 'scrot[0-9]*.png') + 1).png
-			notify 'Scrotted selection' &
-		case '*'
-			echo 'nvalid option, use -h for help.'
-			exit 1
+	getopts $argv | while read -l opt val
+		switch $opt
+			case h help
+				echo -e 'Usage: scrot [options]\n'
+				echo 'options:'
+				echo '  -s,   --selection       take selection scrot'
+				echo '  -h,   --help            print help and exit'
+			case s selection
+				# Take selection scrot
+				maim --hidecursor -s -b 10 -c 238,238,238 $scrotdir/scrot(math (ls $scrotdir | grep -c 'scrot[0-9]*.png') + 1).png
+				notify 'Scrotted selection' &
+			case '*'
+				echo 'nvalid option, use -h for help.'
+				exit 1
+		end
 	end
 else
 	# Take fullscreen scrot
