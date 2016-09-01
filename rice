@@ -31,7 +31,7 @@ if test -n $DISPLAY -a $resize = true
 	sleep 0.1
 end
 
-echo (set_color $c1)"$USER"(set_color $fg)"@"(set_color $c1)"$hostname"(set_color $fg)"   ("(r8)")"
+echo (set_color $c1)"$USER"(set_color $fg)"@"(set_color $c1)"$hostname"(set_color $fg)
 echo
 echo (set_color $c1)"Distro"(set_color $fg)"           $distro"
 echo (set_color $c1)"Kernel"(set_color $fg)"           $kernel"

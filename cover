@@ -9,7 +9,7 @@
 set musicdir $HOME/media/music
 
 # Set cover size
-set size 160x160
+set size 128x128
 
 # Set highlight color
 set highlight yellow
@@ -27,21 +27,21 @@ if test (count $argv) -eq 1
 			echo '  -h,   --help            print help and exit'
 			exit 0
 		case -a --all
-			set path (find $musicdir -type f -name 'cover.*' | sort)
+			set covers (find $musicdir -type f -name 'cover.*' | sort)
 
-			set all (count $path)
+			set all (count $covers)
 			set current 0
 
 			# TODO: Fix blank line after read
 			read -n 1 -p 'echo "Do you want to resize $all covers to $size? [y/N] "' answer
 			switch $answer
 				case Y y
-					for line in $path
+					for cover in $covers
 						set current (math $current + 1)
-						set path (echo $string | rev | string split '/' $line | tail -n 3)
+						set path (string split '/' $cover)
 
-						echo "Resizing cover $current/$all, "(set_color $highlight)"$path[2]"(set_color normal)"."
-						convert $musicdir/$path[1]/$path[2]/$path[3] -filter Lanczos -thumbnail $size! $musicdir/$path[1]/$path[2]/cover_popup.png ^/dev/null
+						echo "Resizing cover $current/$all, "(set_color $highlight)"$path[-2]"(set_color normal)"."
+						convert $cover -filter Lanczos -thumbnail $size! (string replace -r 'cover.(jpg|png|gif)' 'cover_popup.png' $cover)
 						if test $status -ge 1
 							exit 1
 						end
